@@ -8,7 +8,7 @@ import { normalizeSlug, isValidSlug } from '../services/slugNormalize'
 import { calculateFeeHuman, calculateFeeRaw } from '../services/pricing'
 import { verifyUsdcPayment } from '../services/payment'
 import { uploadTicketMetadata } from '../services/ipfs'
-import { registerEventOnChain, mintTicket, computeEventId } from '../services/contracts'
+import { registerEventOnChain, registerEnsSubdomain, mintTicket, computeEventId } from '../services/contracts'
 import { Errors } from '../errors'
 
 const router = Router()
@@ -156,6 +156,19 @@ router.post('/:invoiceId/confirm', async (req: Request, res: Response, next: Nex
       promoterWallet: event.promoterWallet,
     })
 
+    // Register ENS subdomain: label = "artistSlug-eventSlug" (strip .boleto.eth)
+    const ensLabel = event.ensName.replace('.boleto.eth', '')
+    let ensTxHash: string | null = null
+    try {
+      ensTxHash = await registerEnsSubdomain({
+        label:          ensLabel,
+        promoterWallet: event.promoterWallet as `0x${string}`,
+      })
+    } catch (ensErr: any) {
+      console.error('[ENS] subdomain registration failed:', ensErr?.message ?? ensErr)
+      // Non-fatal — event is still activated; ENS can be retried
+    }
+
     // Auto-provision API key for this promoter wallet (once per wallet)
     let apiKey: string | null = null
     let platformId: string | undefined = event.platformId ?? undefined
@@ -180,6 +193,7 @@ router.post('/:invoiceId/confirm', async (req: Request, res: Response, next: Nex
       paymentTxHash:  txHash,
       registerTxHash,
       onChainEventId,
+      l1TxHash:       ensTxHash,
       platformId,
     }).where(eq(schema.events.id, event.id))
 
@@ -188,6 +202,8 @@ router.post('/:invoiceId/confirm', async (req: Request, res: Response, next: Nex
       ensName:         event.ensName,
       contractAddress: process.env.BOLETO_CONTRACT_ADDRESS,
       onChainEventId,
+      ensTxHash,
+      ensSubdomain:    event.ensName,
       status:          'active',
       apiKey,
       apiKeyNote: apiKey

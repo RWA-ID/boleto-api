@@ -62,6 +62,49 @@ export function computeEventId(ensName: string): `0x${string}` {
   return keccak256(toBytes(ensName))
 }
 
+// ── ENS NameWrapper ───────────────────────────────────────────────────────────
+
+const NAME_WRAPPER_ADDRESS  = '0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401' as Address
+const ENS_PUBLIC_RESOLVER   = '0x231b0Ee14048e9dCcD1d247744d114a4EB5E8E63' as Address
+// namehash("boleto.eth")
+const BOLETO_ETH_NODE       = '0x1fd7c395426f74dff675c2c0667966b8da878aa6c5c4c7b17e624f0f2865ab62' as `0x${string}`
+
+const NAME_WRAPPER_ABI = parseAbi([
+  'function setSubnodeRecord(bytes32 parentNode, string label, address owner, address resolver, uint64 ttl, uint32 fuses, uint64 expiry) returns (bytes32)',
+  'function isApprovedForAll(address owner, address operator) view returns (bool)',
+])
+
+/**
+ * Register `label.boleto.eth` via the ENS NameWrapper.
+ * Requires the backend wallet to have setApprovalForAll on NameWrapper from the
+ * boleto.eth owner (multisig). Label is just the subdomain part, e.g. "artist-event".
+ */
+export async function registerEnsSubdomain(params: {
+  label:          string   // e.g. "test00-miami00" (no .boleto.eth suffix)
+  promoterWallet: Address
+}): Promise<Hash> {
+  const wallet = getL1WalletClient()
+  const pub    = getL1PublicClient()
+
+  const hash = await wallet.writeContract({
+    address:      NAME_WRAPPER_ADDRESS,
+    abi:          NAME_WRAPPER_ABI,
+    functionName: 'setSubnodeRecord',
+    args: [
+      BOLETO_ETH_NODE,
+      params.label,
+      params.promoterWallet,
+      ENS_PUBLIC_RESOLVER,
+      0n,                               // ttl
+      0,                                // fuses (none)
+      BigInt('18446744073709551615'),    // expiry = type(uint64).max = permanent
+    ],
+  })
+
+  await pub.waitForTransactionReceipt({ hash })
+  return hash
+}
+
 // ── Register event on shared BoletoTickets contract ───────────────────────────
 
 export async function registerEventOnChain(params: {
