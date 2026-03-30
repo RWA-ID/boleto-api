@@ -252,7 +252,7 @@ export default function CreateEventPage() {
                 disabled={loading || tickets.length === 0}
                 className="w-full bg-[#f97316] text-white font-mono font-bold py-4 rounded-lg hover:bg-[#fb923c] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? 'Creating...' : 'Create Event & Get Invoice'}
+                {loading ? 'Creating...' : 'Create Event & Get API Key'}
               </button>
             </form>
 
