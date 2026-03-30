@@ -1,0 +1,27 @@
+# Env
+.env
+.env.local
+.env.*.local
+
+# Node
+node_modules/
+dist/
+
+# Hardhat / Foundry
+artifacts/
+cache/
+out/
+typechain-types/
+
+# Next.js
+.next/
+dashboard/.next/
+dashboard/out/
+
+# IDE
+.vscode/
+.idea/
+
+# Misc
+*.log
+.DS_Store

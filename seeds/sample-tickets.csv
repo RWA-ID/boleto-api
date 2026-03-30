@@ -1,0 +1,11 @@
+seat_number,price_usdc,section,row,gate,tier,description
+A-101,150.00,Floor VIP,A,1,VIP,Floor standing — premium view
+A-102,150.00,Floor VIP,A,1,VIP,Floor standing — premium view
+A-103,150.00,Floor VIP,A,1,VIP,Floor standing — premium view
+B-201,95.00,Lower Bowl,B,2,General,Lower bowl seating — great view
+B-202,95.00,Lower Bowl,B,2,General,Lower bowl seating — great view
+B-203,95.00,Lower Bowl,B,2,General,Lower bowl seating — great view
+C-301,65.00,Upper Bowl,C,3,General,Upper bowl — full stage view
+C-302,65.00,Upper Bowl,C,3,General,Upper bowl — full stage view
+C-303,65.00,Upper Bowl,C,3,General,Upper bowl — full stage view
+C-304,65.00,Upper Bowl,C,3,General,Upper bowl — full stage view

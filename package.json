@@ -1,0 +1,26 @@
+{
+  "name": "boleto-eth",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "api",
+    "dashboard"
+  ],
+  "scripts": {
+    "dev:api": "cd api && npm run dev",
+    "dev:dashboard": "cd dashboard && npm run dev",
+    "test:contracts": "forge test",
+    "test:api": "cd api && npm test",
+    "build": "cd dashboard && npm run build",
+    "db:push": "cd api && npm run db:push",
+    "db:migrate": "cd api && npm run db:migrate"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "hardhat": "^2.22.0",
+    "@openzeppelin/contracts": "^5.0.0",
+    "typescript": "^5.5.0",
+    "@types/node": "^22.0.0",
+    "dotenv": "^16.4.5"
+  }
+}
