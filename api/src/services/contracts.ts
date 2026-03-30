@@ -70,7 +70,7 @@ export async function registerEventOnChain(params: {
 }): Promise<{ txHash: Hash; eventId: `0x${string}` }> {
   const wallet   = getL1WalletClient()
   const pub      = getL1PublicClient()
-  const address  = process.env.BOLETO_CONTRACT_ADDRESS as Address
+  const address  = (process.env.BOLETO_CONTRACT_ADDRESS || process.env.BOLETO_REGISTRAR_ADDRESS) as Address
   if (!address) throw new Error('BOLETO_CONTRACT_ADDRESS not set')
 
   const eventId = computeEventId(params.ensName)
