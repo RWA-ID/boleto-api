@@ -9,6 +9,7 @@ import {
   type Hash,
   type Address,
 } from 'viem'
+import { namehash } from 'viem/ens'
 import { privateKeyToAccount } from 'viem/accounts'
 import { mainnet, sepolia } from 'viem/chains'
 
@@ -76,11 +77,11 @@ const NAME_WRAPPER_ABI = parseAbi([
 /**
  * Register `label.boleto.eth` via the ENS NameWrapper.
  * Backend wallet owns boleto.eth directly so no approval needed.
- * Label is just the subdomain part e.g. "artist-event" (no .boleto.eth).
+ * Owner is set to the backend wallet so it can create seat sub-subdomains at mint time.
  */
 export async function registerEnsSubdomain(params: {
   label:          string
-  promoterWallet: Address
+  promoterWallet: Address  // kept for reference
 }): Promise<Hash> {
   const wallet = getL1WalletClient()
   const pub    = getL1PublicClient()
@@ -92,15 +93,56 @@ export async function registerEnsSubdomain(params: {
     args: [
       BOLETO_ETH_NODE,
       params.label,
-      params.promoterWallet,
+      wallet.account.address, // backend wallet owns event subdomain → can create seat subdomains
       ENS_PUBLIC_RESOLVER,
       0n,
       0,
-      BigInt('18446744073709551615'), // type(uint64).max = permanent
+      BigInt('18446744073709551615'),
     ],
   })
 
-  await pub.waitForTransactionReceipt({ hash, timeout: 300_000 })
+  await pub.waitForTransactionReceipt({ hash, timeout: 300_000, pollingInterval: 4_000 })
+  return hash
+}
+
+/** Normalize a seat number to a valid ENS label e.g. "7 C-301" → "7-c-301" */
+export function normalizeSeatLabel(seatNumber: string): string {
+  return seatNumber
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+}
+
+/**
+ * Register `seatLabel.eventLabel.boleto.eth` at mint time.
+ * Backend wallet owns the event subdomain so no extra approval needed.
+ */
+export async function registerSeatSubdomain(params: {
+  eventEnsName: string   // e.g. "test1000-miami100.boleto.eth"
+  seatLabel:    string   // normalized e.g. "7-c-301"
+  ownerWallet:  Address  // buyer wallet — owns the seat ENS name
+}): Promise<Hash> {
+  const wallet = getL1WalletClient()
+  const pub    = getL1PublicClient()
+
+  const eventNode = namehash(params.eventEnsName) as `0x${string}`
+
+  const hash = await wallet.writeContract({
+    address:      NAME_WRAPPER_ADDRESS,
+    abi:          NAME_WRAPPER_ABI,
+    functionName: 'setSubnodeRecord',
+    args: [
+      eventNode,
+      params.seatLabel,
+      params.ownerWallet,
+      ENS_PUBLIC_RESOLVER,
+      0n,
+      0,
+      BigInt('18446744073709551615'),
+    ],
+  })
+
+  await pub.waitForTransactionReceipt({ hash, timeout: 300_000, pollingInterval: 4_000 })
   return hash
 }
 

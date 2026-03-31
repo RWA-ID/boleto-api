@@ -11,6 +11,8 @@ import { uploadTicketMetadata } from '../services/ipfs'
 import {
   registerEventOnChain,
   registerEnsSubdomain,
+  registerSeatSubdomain,
+  normalizeSeatLabel,
   signTicketVoucher,
   mintTicket,
 } from '../services/contracts'
@@ -409,6 +411,19 @@ router.post('/:eventId/mint', async (req: Request, res: Response, next: NextFunc
       tokenUri:   metadataUri!,
     })
 
+    // Register seat ENS subdomain: e.g. 7-c-301.test1000-miami100.boleto.eth
+    const seatLabel  = normalizeSeatLabel(ticket.seatNumber)
+    const seatEnsName = `${seatLabel}.${event.ensName}`
+    try {
+      await registerSeatSubdomain({
+        eventEnsName: event.ensName,
+        seatLabel,
+        ownerWallet:  body.toWallet as Address,
+      })
+    } catch (ensErr: any) {
+      console.error('[ENS seat] registration failed:', ensErr?.message ?? ensErr)
+    }
+
     await db.update(schema.tickets).set({
       minted:      true,
       tokenId,
@@ -422,6 +437,7 @@ router.post('/:eventId/mint', async (req: Request, res: Response, next: NextFunc
       tokenId,
       txHash:      mintTxHash,
       seatNumber:  ticket.seatNumber,
+      seatEnsName,
       ensName:     event.ensName,
       metadataUri,
       qrCodeUri,
