@@ -7,16 +7,16 @@ import "../contracts/BoletoTickets.sol";
 contract DeployBoletoTickets is Script {
     function run() external {
         address treasury = vm.envAddress("PLATFORM_TREASURY_ADDRESS");
-        address backend  = vm.envAddress("BOLETO_ETH_NODE"); // API backend wallet — added as minter
+        // Backend wallet = deployer = signer for vouchers + direct mints
+        address backend  = vm.envOr("BACKEND_WALLET", msg.sender);
 
         vm.startBroadcast();
 
-        BoletoTickets tickets = new BoletoTickets(treasury);
-        tickets.addMinter(backend);
+        BoletoTickets tickets = new BoletoTickets(backend, treasury);
 
         console.log("BoletoTickets deployed:", address(tickets));
-        console.log("Treasury (royalty recipient):", treasury);
         console.log("Minter (backend wallet):", backend);
+        console.log("Royalty recipient (treasury):", treasury);
 
         vm.stopBroadcast();
     }

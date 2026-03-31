@@ -38,14 +38,21 @@ export function getL1WalletClient() {
 // ── BoletoTickets ABI ─────────────────────────────────────────────────────────
 
 export const BOLETO_TICKETS_ABI = parseAbi([
-  'function registerEvent(bytes32 eventId, string ensName, address promoter)',
+  // registration — O(1) gas, called at activation
+  'function registerEvent(bytes32 eventId, uint256 totalSeats, string ensName, address promoter)',
+  // buyer self-mint with EIP-712 voucher
+  'function mintWithVoucher(bytes32 eventId, address to, string seatNumber, string tokenUri, bytes signature)',
+  // backend direct-mint fallback
   'function mint(bytes32 eventId, address to, string seatNumber, string tokenUri) returns (uint256)',
-  'function batchMint(bytes32 eventId, address[] recipients, string[] seatNumbers, string[] tokenUris) returns (uint256[])',
+  // views
+  'function events(bytes32) view returns (bool registered, uint256 totalSeats, uint256 mintedCount, string ensName, address promoter)',
   'function registeredEvents(bytes32) view returns (bool)',
   'function eventEnsName(bytes32) view returns (string)',
   'function tokenEvent(uint256) view returns (bytes32)',
+  'function seatMinted(bytes32) view returns (bool)',
   'function royaltyInfo(uint256 tokenId, uint256 salePrice) view returns (address, uint256)',
-  'event EventRegistered(bytes32 indexed eventId, string ensName, address promoter)',
+  // events
+  'event EventRegistered(bytes32 indexed eventId, string ensName, address promoter, uint256 totalSeats)',
   'event TicketMinted(uint256 indexed tokenId, address indexed to, bytes32 indexed eventId, string seatNumber)',
 ])
 
@@ -55,32 +62,24 @@ export const ERC20_ABI = parseAbi([
   'function transfer(address to, uint256 amount) returns (bool)',
 ])
 
-// ── Event ID ──────────────────────────────────────────────────────────────────
-
-/** Compute the on-chain eventId (bytes32 keccak256 of the ENS name) */
-export function computeEventId(ensName: string): `0x${string}` {
-  return keccak256(toBytes(ensName))
-}
-
 // ── ENS NameWrapper ───────────────────────────────────────────────────────────
 
-const NAME_WRAPPER_ADDRESS  = '0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401' as Address
-const ENS_PUBLIC_RESOLVER   = '0x231b0Ee14048e9dCcD1d247744d114a4EB5E8E63' as Address
+const NAME_WRAPPER_ADDRESS = '0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401' as Address
+const ENS_PUBLIC_RESOLVER  = '0x231b0Ee14048e9dCcD1d247744d114a4EB5E8E63' as Address
 // namehash("boleto.eth")
-const BOLETO_ETH_NODE       = '0x1fd7c395426f74dff675c2c0667966b8da878aa6c5c4c7b17e624f0f2865ab62' as `0x${string}`
+const BOLETO_ETH_NODE      = '0x1fd7c395426f74dff675c2c0667966b8da878aa6c5c4c7b17e624f0f2865ab62' as `0x${string}`
 
 const NAME_WRAPPER_ABI = parseAbi([
   'function setSubnodeRecord(bytes32 parentNode, string label, address owner, address resolver, uint64 ttl, uint32 fuses, uint64 expiry) returns (bytes32)',
-  'function isApprovedForAll(address owner, address operator) view returns (bool)',
 ])
 
 /**
  * Register `label.boleto.eth` via the ENS NameWrapper.
- * Requires the backend wallet to have setApprovalForAll on NameWrapper from the
- * boleto.eth owner (multisig). Label is just the subdomain part, e.g. "artist-event".
+ * Backend wallet owns boleto.eth directly so no approval needed.
+ * Label is just the subdomain part e.g. "artist-event" (no .boleto.eth).
  */
 export async function registerEnsSubdomain(params: {
-  label:          string   // e.g. "test00-miami00" (no .boleto.eth suffix)
+  label:          string
   promoterWallet: Address
 }): Promise<Hash> {
   const wallet = getL1WalletClient()
@@ -95,9 +94,9 @@ export async function registerEnsSubdomain(params: {
       params.label,
       params.promoterWallet,
       ENS_PUBLIC_RESOLVER,
-      0n,                               // ttl
-      0,                                // fuses (none)
-      BigInt('18446744073709551615'),    // expiry = type(uint64).max = permanent
+      0n,
+      0,
+      BigInt('18446744073709551615'), // type(uint64).max = permanent
     ],
   })
 
@@ -105,10 +104,18 @@ export async function registerEnsSubdomain(params: {
   return hash
 }
 
+// ── Event ID ──────────────────────────────────────────────────────────────────
+
+/** Compute the on-chain eventId (bytes32 keccak256 of the ENS name) */
+export function computeEventId(ensName: string): `0x${string}` {
+  return keccak256(toBytes(ensName))
+}
+
 // ── Register event on shared BoletoTickets contract ───────────────────────────
 
 export async function registerEventOnChain(params: {
   ensName:        string
+  totalSeats:     number
   promoterWallet: string
 }): Promise<{ txHash: Hash; eventId: `0x${string}` }> {
   const wallet   = getL1WalletClient()
@@ -122,14 +129,64 @@ export async function registerEventOnChain(params: {
     address,
     abi:          BOLETO_TICKETS_ABI,
     functionName: 'registerEvent',
-    args:         [eventId, params.ensName, params.promoterWallet as Address],
+    args:         [eventId, BigInt(params.totalSeats), params.ensName, params.promoterWallet as Address],
   })
 
   await pub.waitForTransactionReceipt({ hash })
   return { txHash: hash, eventId }
 }
 
-// ── Mint single ticket ────────────────────────────────────────────────────────
+// ── Sign ticket voucher (EIP-712) ─────────────────────────────────────────────
+
+/** EIP-712 domain matches the deployed BoletoTickets contract */
+function getVoucherDomain() {
+  const address = (process.env.BOLETO_CONTRACT_ADDRESS || process.env.BOLETO_REGISTRAR_ADDRESS) as Address
+  if (!address) throw new Error('BOLETO_CONTRACT_ADDRESS not set')
+  return {
+    name:              'BoletoTickets',
+    version:           '1',
+    chainId:           isTestnet() ? 11155111 : 1,
+    verifyingContract: address,
+  } as const
+}
+
+const VOUCHER_TYPES = {
+  TicketVoucher: [
+    { name: 'eventId',    type: 'bytes32' },
+    { name: 'to',         type: 'address' },
+    { name: 'seatNumber', type: 'string'  },
+    { name: 'tokenUri',   type: 'string'  },
+  ],
+} as const
+
+/**
+ * Sign a ticket voucher using the backend minter wallet.
+ * Returns the EIP-712 signature the buyer will submit to mintWithVoucher().
+ */
+export async function signTicketVoucher(params: {
+  eventId:    `0x${string}`
+  to:         Address
+  seatNumber: string
+  tokenUri:   string
+}): Promise<`0x${string}`> {
+  const wallet = getL1WalletClient()
+
+  const signature = await wallet.signTypedData({
+    domain:      getVoucherDomain(),
+    types:       VOUCHER_TYPES,
+    primaryType: 'TicketVoucher',
+    message: {
+      eventId:    params.eventId,
+      to:         params.to,
+      seatNumber: params.seatNumber,
+      tokenUri:   params.tokenUri,
+    },
+  })
+
+  return signature
+}
+
+// ── Mint single ticket (backend direct mint) ──────────────────────────────────
 
 export async function mintTicket(params: {
   eventId:    `0x${string}`
@@ -167,43 +224,4 @@ export async function mintTicket(params: {
   }
 
   return { tokenId, txHash: hash }
-}
-
-// ── Batch mint tickets ────────────────────────────────────────────────────────
-
-export async function batchMintTickets(params: {
-  eventId:     `0x${string}`
-  recipients:  Address[]
-  seatNumbers: string[]
-  tokenUris:   string[]
-}): Promise<{ tokenIds: string[]; txHash: Hash }> {
-  const wallet  = getL1WalletClient()
-  const pub     = getL1PublicClient()
-  const address = process.env.BOLETO_CONTRACT_ADDRESS as Address
-  if (!address) throw new Error('BOLETO_CONTRACT_ADDRESS not set')
-
-  const hash = await wallet.writeContract({
-    address,
-    abi:          BOLETO_TICKETS_ABI,
-    functionName: 'batchMint',
-    args:         [params.eventId, params.recipients, params.seatNumbers, params.tokenUris],
-  })
-
-  const receipt = await pub.waitForTransactionReceipt({ hash })
-
-  const tokenIds: string[] = []
-  for (const log of receipt.logs) {
-    try {
-      const decoded = decodeEventLog({
-        abi:    BOLETO_TICKETS_ABI,
-        data:   log.data,
-        topics: log.topics,
-      } as any)
-      if ((decoded as any).eventName === 'TicketMinted') {
-        tokenIds.push(String((decoded as any).args.tokenId))
-      }
-    } catch {}
-  }
-
-  return { tokenIds, txHash: hash }
 }

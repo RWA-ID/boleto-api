@@ -8,14 +8,17 @@ import { normalizeSlug, isValidSlug } from '../services/slugNormalize'
 import { calculateFeeHuman, calculateFeeRaw } from '../services/pricing'
 import { verifyUsdcPayment } from '../services/payment'
 import { uploadTicketMetadata } from '../services/ipfs'
-import { registerEventOnChain, registerEnsSubdomain, batchMintTickets, mintTicket, computeEventId } from '../services/contracts'
+import {
+  registerEventOnChain,
+  registerEnsSubdomain,
+  signTicketVoucher,
+  mintTicket,
+} from '../services/contracts'
 import { Errors } from '../errors'
 
 const router = Router()
 
 // ── POST /v1/events ───────────────────────────────────────────────────────────
-// Creates an event record and expands CSV into the tickets table.
-// Body is multipart: fields + csvFile (base64 or JSON array of rows).
 
 const CreateEventSchema = z.object({
   artistSlug:     z.string().min(1).max(50),
@@ -24,10 +27,7 @@ const CreateEventSchema = z.object({
   eventName:      z.string().min(1).max(200),
   eventDate:      z.string().optional(),
   imageUri:       z.string().optional(),
-  // CSV rows as a JSON array: each row is { seat_number, price_usdc, ...rest }
-  tickets: z.array(
-    z.record(z.string())
-  ).min(1),
+  tickets:        z.array(z.record(z.string())).min(1),
 })
 
 router.post('/', async (req: Request, res: Response, next: NextFunction) => {
@@ -49,7 +49,6 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
     })
     if (existing) throw Errors.EVENT_ALREADY_EXISTS()
 
-    // Validate tickets CSV rows — each must have seat_number
     for (const row of body.tickets) {
       if (!row['seat_number']) throw Errors.SEAT_NUMBER_MISSING()
     }
@@ -76,7 +75,6 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
       })
       .returning()
 
-    // Expand CSV rows into tickets table
     const ticketRows: (typeof schema.tickets.$inferInsert)[] = body.tickets.map((row) => ({
       eventId:    event.id,
       seatNumber: row['seat_number']!,
@@ -120,7 +118,8 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
 })
 
 // ── POST /v1/events/:invoiceId/confirm ────────────────────────────────────────
-// Verifies USDC payment, registers event on-chain, issues API key.
+// Verifies USDC payment, registers event on-chain + ENS subdomain, issues API key.
+// No minting happens here — tickets are minted on-demand via /voucher or /mint.
 
 router.post('/:invoiceId/confirm', async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -136,11 +135,11 @@ router.post('/:invoiceId/confirm', async (req: Request, res: Response, next: Nex
 
     if (event.status === 'active') {
       return res.json({
-        eventId:        event.id,
-        ensName:        event.ensName,
+        eventId:         event.id,
+        ensName:         event.ensName,
         contractAddress: process.env.BOLETO_CONTRACT_ADDRESS,
-        onChainEventId: event.onChainEventId,
-        status:         'active',
+        onChainEventId:  event.onChainEventId,
+        status:          'active',
       })
     }
 
@@ -150,13 +149,14 @@ router.post('/:invoiceId/confirm', async (req: Request, res: Response, next: Nex
     const verified       = await verifyUsdcPayment(txHash as `0x${string}`, expectedAmount, treasury)
     if (!verified) throw Errors.PAYMENT_NOT_VERIFIED()
 
-    // Register event on the shared BoletoTickets contract
+    // Register event on BoletoTickets — O(1) gas, no minting
     const { txHash: registerTxHash, eventId: onChainEventId } = await registerEventOnChain({
       ensName:        event.ensName,
+      totalSeats:     event.totalTickets,
       promoterWallet: event.promoterWallet,
     })
 
-    // Register ENS subdomain: label = "artistSlug-eventSlug" (strip .boleto.eth)
+    // Register ENS subdomain (backend wallet owns boleto.eth directly)
     const ensLabel = event.ensName.replace('.boleto.eth', '')
     let ensTxHash: string | null = null
     try {
@@ -166,62 +166,7 @@ router.post('/:invoiceId/confirm', async (req: Request, res: Response, next: Nex
       })
     } catch (ensErr: any) {
       console.error('[ENS] subdomain registration failed:', ensErr?.message ?? ensErr)
-      // Non-fatal — event is still activated; ENS can be retried
     }
-
-    // Batch upload NFT metadata to IPFS then mint all tickets to the promoter
-    const allTickets = await db.query.tickets.findMany({
-      where: eq(schema.tickets.eventId, event.id),
-    })
-
-    type UploadedTicket = {
-      ticketId:    string
-      seatNumber:  string
-      metadataUri: string
-      qrCodeUri:   string
-    }
-
-    const UPLOAD_BATCH = 5
-    const uploaded: UploadedTicket[] = []
-    for (let i = 0; i < allTickets.length; i += UPLOAD_BATCH) {
-      const batch = allTickets.slice(i, i + UPLOAD_BATCH)
-      const results = await Promise.all(
-        batch.map(async (t) => {
-          const csvAttributes = JSON.parse(t.metadata || '{}') as Record<string, string>
-          const { metadataUri, qrCodeUri } = await uploadTicketMetadata({
-            seatNumber:   t.seatNumber,
-            ensName:      event.ensName,
-            eventName:    event.eventName,
-            imageUri:     event.imageUri || '',
-            csvAttributes,
-          })
-          return { ticketId: t.id, seatNumber: t.seatNumber, metadataUri, qrCodeUri }
-        })
-      )
-      uploaded.push(...results)
-    }
-
-    // Single batchMint call — all NFTs go to promoter wallet initially
-    const { tokenIds, txHash: batchMintTxHash } = await batchMintTickets({
-      eventId:     onChainEventId as `0x${string}`,
-      recipients:  uploaded.map(() => event.promoterWallet as `0x${string}`),
-      seatNumbers: uploaded.map((t) => t.seatNumber),
-      tokenUris:   uploaded.map((t) => t.metadataUri),
-    })
-
-    // Persist tokenIds + metadata URIs for each ticket
-    await Promise.all(
-      uploaded.map((t, idx) =>
-        db.update(schema.tickets).set({
-          minted:      true,
-          tokenId:     tokenIds[idx] ?? null,
-          ownerWallet: event.promoterWallet,
-          mintTxHash:  batchMintTxHash,
-          metadataUri: t.metadataUri,
-          qrCodeUri:   t.qrCodeUri,
-        }).where(eq(schema.tickets.id, t.ticketId))
-      )
-    )
 
     // Auto-provision API key for this promoter wallet (once per wallet)
     let apiKey: string | null = null
@@ -257,8 +202,6 @@ router.post('/:invoiceId/confirm', async (req: Request, res: Response, next: Nex
       contractAddress: process.env.BOLETO_CONTRACT_ADDRESS,
       onChainEventId,
       ensTxHash,
-      batchMintTxHash,
-      ticketsMinted:   uploaded.length,
       status:          'active',
       apiKey,
       apiKeyNote: apiKey
@@ -271,7 +214,6 @@ router.post('/:invoiceId/confirm', async (req: Request, res: Response, next: Nex
 })
 
 // ── GET /v1/events/:eventId/inventory ─────────────────────────────────────────
-// Platform uses this to import ticket inventory into their own system.
 
 router.get('/:eventId/inventory', async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -314,8 +256,83 @@ router.get('/:eventId/inventory', async (req: Request, res: Response, next: Next
   }
 })
 
+// ── POST /v1/events/:eventId/voucher ──────────────────────────────────────────
+// Platform calls this after a buyer purchases a ticket.
+// Returns an EIP-712 signed voucher the buyer submits to mintWithVoucher() on-chain.
+
+const VoucherSchema = z.object({
+  seatNumber: z.string().min(1),
+  buyerWallet: z.string().regex(/^0x[0-9a-fA-F]{40}$/),
+})
+
+router.post('/:eventId/voucher', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { eventId } = req.params
+    const body = VoucherSchema.parse(req.body)
+
+    const event =
+      (await db.query.events.findFirst({ where: eq(schema.events.id, eventId) })) ||
+      (await db.query.events.findFirst({ where: eq(schema.events.ensName, eventId) }))
+
+    if (!event)                    throw Errors.EVENT_NOT_FOUND()
+    if (event.status !== 'active') throw Errors.EVENT_NOT_ACTIVE()
+    if (!event.onChainEventId)     throw Errors.EVENT_NOT_ACTIVE()
+
+    const allTickets = await db.query.tickets.findMany({
+      where: eq(schema.tickets.eventId, event.id),
+    })
+    const ticket = allTickets.find(t => t.seatNumber === body.seatNumber)
+
+    if (!ticket)       throw Errors.TICKET_NOT_FOUND()
+    if (ticket.minted) throw Errors.TICKET_ALREADY_MINTED()
+
+    // Upload metadata + QR code to IPFS (if not already done)
+    let { metadataUri, qrCodeUri } = ticket
+    if (!metadataUri) {
+      const csvAttributes = JSON.parse(ticket.metadata || '{}') as Record<string, string>
+      const uploaded = await uploadTicketMetadata({
+        seatNumber:   ticket.seatNumber,
+        ensName:      event.ensName,
+        eventName:    event.eventName,
+        imageUri:     event.imageUri || '',
+        csvAttributes,
+      })
+      metadataUri = uploaded.metadataUri
+      qrCodeUri   = uploaded.qrCodeUri
+
+      // Cache the URIs so repeat voucher requests are instant
+      await db.update(schema.tickets).set({ metadataUri, qrCodeUri })
+        .where(eq(schema.tickets.id, ticket.id))
+    }
+
+    // Sign the EIP-712 voucher — buyer submits this directly to the contract
+    const signature = await signTicketVoucher({
+      eventId:    event.onChainEventId as `0x${string}`,
+      to:         body.buyerWallet as `0x${string}`,
+      seatNumber: ticket.seatNumber,
+      tokenUri:   metadataUri!,
+    })
+
+    res.json({
+      // Everything the buyer needs to call mintWithVoucher() themselves
+      contractAddress: process.env.BOLETO_CONTRACT_ADDRESS,
+      eventId:         event.onChainEventId,
+      to:              body.buyerWallet,
+      seatNumber:      ticket.seatNumber,
+      tokenUri:        metadataUri,
+      signature,
+      // For display / QR scanning
+      ensName:         event.ensName,
+      eventName:       event.eventName,
+      qrCodeUri,
+    })
+  } catch (err) {
+    next(err)
+  }
+})
+
 // ── POST /v1/events/:eventId/mint ─────────────────────────────────────────────
-// Mint a single ticket. toWallet = buyer wallet (buyer mint) or platform wallet (platform mint).
+// Backend mints directly on behalf of buyer (gasless / no-wallet flow).
 
 const MintSchema = z.object({
   seatNumber: z.string().min(1),
@@ -340,25 +357,28 @@ router.post('/:eventId/mint', async (req: Request, res: Response, next: NextFunc
     })
     const ticket = allTickets.find(t => t.seatNumber === body.seatNumber)
 
-    if (!ticket)        throw Errors.TICKET_NOT_FOUND()
-    if (ticket.minted)  throw Errors.TICKET_ALREADY_MINTED()
+    if (!ticket)       throw Errors.TICKET_NOT_FOUND()
+    if (ticket.minted) throw Errors.TICKET_ALREADY_MINTED()
 
-    // Generate metadata + QR code and pin to IPFS
-    const csvAttributes = JSON.parse(ticket.metadata || '{}') as Record<string, string>
-    const { metadataUri, qrCodeUri } = await uploadTicketMetadata({
-      seatNumber:    ticket.seatNumber,
-      ensName:       event.ensName,
-      eventName:     event.eventName,
-      imageUri:      event.imageUri || '',
-      csvAttributes,
-    })
+    let { metadataUri, qrCodeUri } = ticket
+    if (!metadataUri) {
+      const csvAttributes = JSON.parse(ticket.metadata || '{}') as Record<string, string>
+      const uploaded = await uploadTicketMetadata({
+        seatNumber:   ticket.seatNumber,
+        ensName:      event.ensName,
+        eventName:    event.eventName,
+        imageUri:     event.imageUri || '',
+        csvAttributes,
+      })
+      metadataUri = uploaded.metadataUri
+      qrCodeUri   = uploaded.qrCodeUri
+    }
 
-    // Mint on-chain
     const { tokenId, txHash: mintTxHash } = await mintTicket({
       eventId:    event.onChainEventId as `0x${string}`,
       to:         body.toWallet as `0x${string}`,
       seatNumber: ticket.seatNumber,
-      tokenUri:   metadataUri,
+      tokenUri:   metadataUri!,
     })
 
     await db.update(schema.tickets).set({
