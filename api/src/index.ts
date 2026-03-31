@@ -5,6 +5,7 @@ import { rateLimiter } from './middleware/rateLimit'
 import eventsRouter from './routes/events'
 import adminRouter from './routes/admin'
 import uploadRouter from './routes/upload'
+import profileRouter from './routes/profile'
 import { ApiError } from './errors'
 
 const app  = express()
@@ -44,9 +45,10 @@ app.get('/health', (_req, res) => {
 })
 
 // ── Routes ────────────────────────────────────────────────────────────────────
-app.use('/v1/admin',  adminRouter)
-app.use('/v1/events', eventsRouter)
-app.use('/v1/upload', uploadRouter)
+app.use('/v1/admin',   adminRouter)
+app.use('/v1/events',  eventsRouter)
+app.use('/v1/upload',  uploadRouter)
+app.use('/v1/profile', profileRouter)
 
 // ── Error handler ─────────────────────────────────────────────────────────────
 app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {

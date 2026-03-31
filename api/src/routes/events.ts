@@ -14,9 +14,37 @@ import {
   signTicketVoucher,
   mintTicket,
 } from '../services/contracts'
+import { requireApiKey } from '../middleware/auth'
 import { Errors } from '../errors'
 
 const router = Router()
+
+// ── GET /v1/events  (list all events for authenticated promoter) ──────────────
+
+router.get('/', requireApiKey, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const events = await db.query.events.findMany({
+      where: eq(schema.events.promoterWallet, req.platform!.walletAddress!),
+      orderBy: (e, { desc }) => [desc(e.createdAt)],
+    })
+    res.json({
+      promoterName: req.platform!.promoterName || req.platform!.name,
+      bannerUri:    req.platform!.bannerUri,
+      events: events.map((e) => ({
+        id:           e.id,
+        eventName:    e.eventName,
+        ensName:      e.ensName,
+        status:       e.status,
+        totalTickets: e.totalTickets,
+        eventDate:    e.eventDate,
+        imageUri:     e.imageUri,
+        createdAt:    e.createdAt,
+      })),
+    })
+  } catch (err) {
+    next(err)
+  }
+})
 
 // ── POST /v1/events ───────────────────────────────────────────────────────────
 

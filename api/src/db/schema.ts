@@ -5,6 +5,8 @@ export const platforms = pgTable('platforms', {
   name:          text('name').notNull(),
   walletAddress: text('wallet_address'),
   apiKey:        text('api_key').unique().notNull(),
+  promoterName:  text('promoter_name'),   // display name / company
+  bannerUri:     text('banner_uri'),      // branding banner image URL
   createdAt:     timestamp('created_at').defaultNow(),
 })
 
