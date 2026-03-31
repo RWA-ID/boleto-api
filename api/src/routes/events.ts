@@ -133,11 +133,14 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
 
 // ── GET /v1/events/:id ────────────────────────────────────────────────────────
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params
+    const isUuid = UUID_RE.test(id)
     const event =
-      (await db.query.events.findFirst({ where: eq(schema.events.id, id) })) ||
+      (isUuid ? await db.query.events.findFirst({ where: eq(schema.events.id, id) }) : null) ||
       (await db.query.events.findFirst({ where: eq(schema.events.invoiceId, id) })) ||
       (await db.query.events.findFirst({ where: eq(schema.events.ensName, id) }))
 
@@ -249,8 +252,9 @@ router.post('/:invoiceId/confirm', async (req: Request, res: Response, next: Nex
 router.get('/:eventId/inventory', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { eventId } = req.params
+    const isUuid = UUID_RE.test(eventId)
     const event =
-      (await db.query.events.findFirst({ where: eq(schema.events.id, eventId) })) ||
+      (isUuid ? await db.query.events.findFirst({ where: eq(schema.events.id, eventId) }) : null) ||
       (await db.query.events.findFirst({ where: eq(schema.events.ensName, eventId) }))
 
     if (!event) throw Errors.EVENT_NOT_FOUND()
@@ -461,8 +465,9 @@ router.post('/:eventId/redeem', async (req: Request, res: Response, next: NextFu
     const { eventId } = req.params
     const { seatNumber } = z.object({ seatNumber: z.string().min(1) }).parse(req.body)
 
+    const isUuid = UUID_RE.test(eventId)
     const event =
-      (await db.query.events.findFirst({ where: eq(schema.events.id, eventId) })) ||
+      (isUuid ? await db.query.events.findFirst({ where: eq(schema.events.id, eventId) }) : null) ||
       (await db.query.events.findFirst({ where: eq(schema.events.ensName, eventId) }))
 
     if (!event) throw Errors.EVENT_NOT_FOUND()
