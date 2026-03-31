@@ -89,6 +89,8 @@ router.post('/migrate', requireAdminSecret, async (_req: Request, res: Response,
         minted       BOOLEAN DEFAULT FALSE,
         created_at   TIMESTAMP DEFAULT NOW()
       )`,
+      `ALTER TABLE tickets ADD COLUMN IF NOT EXISTS redeemed BOOLEAN DEFAULT FALSE`,
+      `ALTER TABLE tickets ADD COLUMN IF NOT EXISTS redeemed_at TIMESTAMP`,
     ]
 
     const results: string[] = []

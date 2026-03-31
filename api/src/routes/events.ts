@@ -275,6 +275,8 @@ router.get('/:eventId/inventory', async (req: Request, res: Response, next: Next
         seatNumber:   t.seatNumber,
         priceUsdc:    t.priceUsdc,
         minted:       t.minted,
+        redeemed:     t.redeemed,
+        redeemedAt:   t.redeemedAt,
         tokenId:      t.tokenId,
         ownerWallet:  t.ownerWallet,
         metadataUri:  t.metadataUri,
@@ -444,6 +446,40 @@ router.post('/:eventId/mint', async (req: Request, res: Response, next: NextFunc
       qrCodeUri,
       ownerWallet: body.toWallet,
     })
+  } catch (err) {
+    next(err)
+  }
+})
+
+// ── POST /v1/events/:eventId/redeem ───────────────────────────────────────────
+// Requires API key. Marks a ticket as redeemed (door scanner use).
+
+router.post('/:eventId/redeem', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (!req.platform) return res.status(401).json({ error: 'unauthorized', message: 'API key required' })
+
+    const { eventId } = req.params
+    const { seatNumber } = z.object({ seatNumber: z.string().min(1) }).parse(req.body)
+
+    const event =
+      (await db.query.events.findFirst({ where: eq(schema.events.id, eventId) })) ||
+      (await db.query.events.findFirst({ where: eq(schema.events.ensName, eventId) }))
+
+    if (!event) throw Errors.EVENT_NOT_FOUND()
+
+    const ticket = await db.query.tickets.findFirst({
+      where: (t, { and }) => and(eq(t.eventId, event.id), eq(t.seatNumber, seatNumber)),
+    })
+
+    if (!ticket)        return res.status(404).json({ error: 'ticket_not_found',   message: 'Ticket not found' })
+    if (!ticket.minted) return res.status(400).json({ error: 'ticket_not_minted',  message: 'Ticket has not been minted yet' })
+    if (ticket.redeemed) return res.status(409).json({ error: 'already_redeemed',  message: 'Ticket already redeemed', redeemedAt: ticket.redeemedAt })
+
+    await db.update(schema.tickets)
+      .set({ redeemed: true, redeemedAt: new Date() })
+      .where(eq(schema.tickets.id, ticket.id))
+
+    res.json({ success: true, seatNumber, ensName: event.ensName, redeemedAt: new Date() })
   } catch (err) {
     next(err)
   }

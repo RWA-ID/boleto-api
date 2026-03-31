@@ -44,6 +44,8 @@ export const tickets = pgTable('tickets', {
   ownerWallet: text('owner_wallet'),                         // null until minted
   mintTxHash:  text('mint_tx_hash'),
   minted:      boolean('minted').default(false),
+  redeemed:    boolean('redeemed').default(false),
+  redeemedAt:  timestamp('redeemed_at'),
   createdAt:   timestamp('created_at').defaultNow(),
 })
 
