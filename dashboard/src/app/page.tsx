@@ -249,9 +249,9 @@ export default function HomePage() {
                 {/* Tier breakdown */}
                 <div className="mt-4 space-y-1.5">
                   {[
-                    { label: '1 – 999 tickets', price: '$0.15/ticket', active: ticketCount < 1000 },
-                    { label: '1,000 – 4,999', price: '$0.25/ticket', active: ticketCount >= 1000 && ticketCount < 5000 },
-                    { label: '5,000+', price: '$0.35/ticket', active: ticketCount >= 5000 },
+                    { label: '1 – 999 tickets', price: '$0.35/ticket', active: ticketCount < 1000 },
+                    { label: '1,000 – 9,999', price: '$0.25/ticket', active: ticketCount >= 1000 && ticketCount < 10000 },
+                    { label: '10,000+', price: '$0.15/ticket', active: ticketCount >= 10000 },
                   ].map(tier => (
                     <div key={tier.label} className={`flex justify-between text-xs px-3 py-2 rounded transition-colors ${tier.active ? 'bg-[#f97316]/10 border border-[#f97316]/20 text-[#f0f0f0]' : 'text-[#444]'}`}>
                       <span>{tier.label}</span>

@@ -1,7 +1,7 @@
 export const PRICING_TIERS = [
-  { max: 999,      pricePerTicket: 0.15, label: 'Starter',      range: '1 – 999 tickets'        },
-  { max: 4_999,    pricePerTicket: 0.25, label: 'Standard',     range: '1,000 – 4,999 tickets'  },
-  { max: Infinity, pricePerTicket: 0.35, label: 'Professional', range: '5,000+ tickets'          },
+  { max: 999,      pricePerTicket: 0.35, label: 'Standard',   range: '1 – 999 tickets'          },
+  { max: 9_999,    pricePerTicket: 0.25, label: 'Pro',        range: '1,000 – 9,999 tickets'    },
+  { max: Infinity, pricePerTicket: 0.15, label: 'Enterprise', range: '10,000+ tickets'           },
 ]
 
 export function calculateFee(ticketCount: number): { fee: number; tier: string; pricePerTicket: number } {

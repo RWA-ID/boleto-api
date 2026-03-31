@@ -52,7 +52,7 @@ const ENDPOINTS: Endpoint[] = [
   "invoiceId":      "inv_a1b2c3d4",
   "ensName":        "badbunny-miami25.boleto.eth",
   "ticketCount":    1,
-  "feeDue":         "0.15",
+  "feeDue":         "0.35",
   "paymentAddress": "0x0104c88ea4f55c26df89f5cd3ec62f3c8288d69b",
   "status":         "pending_payment",
   "expiresAt":      "2025-01-02T00:00:00.000Z"

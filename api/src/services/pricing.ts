@@ -1,9 +1,10 @@
 /**
  * Volume-based pricing tiers for the boleto.eth platform fee.
+ * More volume = lower per-ticket cost.
  *
- * Tier 1 — up to 999 tickets:     $0.15 / ticket
- * Tier 2 — 1,000 – 4,999 tickets: $0.25 / ticket
- * Tier 3 — 5,000+ tickets:        $0.35 / ticket
+ * Tier 1 — up to 999 tickets:      $0.35 / ticket
+ * Tier 2 — 1,000 – 9,999 tickets:  $0.25 / ticket
+ * Tier 3 — 10,000+ tickets:        $0.15 / ticket
  */
 
 export type PricingTier = {
@@ -13,9 +14,9 @@ export type PricingTier = {
 }
 
 export const PRICING_TIERS: PricingTier[] = [
-  { label: 'Starter',      perTicket: 0.15, maxTickets: 999  },
-  { label: 'Standard',     perTicket: 0.25, maxTickets: 4999 },
-  { label: 'Professional', perTicket: 0.35, maxTickets: null },
+  { label: 'Standard',     perTicket: 0.35, maxTickets: 999   },
+  { label: 'Pro',          perTicket: 0.25, maxTickets: 9999  },
+  { label: 'Enterprise',   perTicket: 0.15, maxTickets: null  },
 ]
 
 export function getTier(ticketCount: number): PricingTier {

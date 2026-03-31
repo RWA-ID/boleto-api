@@ -192,11 +192,11 @@ Fee is paid **once at event activation** via USDC. It covers ENS subdomain regis
 
 | Tier | Tickets | Price per Ticket |
 |---|---|---|
-| Standard | 1 – 999 | $0.15 USDC |
-| Pro | 1,000 – 4,999 | $0.25 USDC |
-| Enterprise | 5,000+ | $0.35 USDC |
+| Standard | 1 – 999 | $0.35 USDC |
+| Pro | 1,000 – 9,999 | $0.25 USDC |
+| Enterprise | 10,000+ | $0.15 USDC |
 
-**Example:** 10,000-seat arena = 10,000 × $0.25 = **$2,500 USDC** activation fee (covers the full run).
+**Example:** 10,000-seat arena = 10,000 × $0.15 = **$1,500 USDC** activation fee (covers the full run).
 
 ---
 
@@ -975,11 +975,11 @@ La tarifa se paga **una sola vez al activar el evento** en USDC. Cubre el regist
 
 | Nivel | Entradas | Precio por Entrada |
 |---|---|---|
-| Standard | 1 – 999 | $0.15 USDC |
-| Pro | 1,000 – 4,999 | $0.25 USDC |
-| Enterprise | 5,000+ | $0.35 USDC |
+| Standard | 1 – 999 | $0.35 USDC |
+| Pro | 1,000 – 9,999 | $0.25 USDC |
+| Enterprise | 10,000+ | $0.15 USDC |
 
-**Ejemplo:** Arena de 10,000 asientos = 10,000 × $0.25 = **$2,500 USDC** de tarifa de activación (cubre toda la corrida).
+**Ejemplo:** Arena de 10,000 asientos = 10,000 × $0.15 = **$1,500 USDC** de tarifa de activación (cubre toda la corrida).
 
 ---
 
