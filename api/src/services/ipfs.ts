@@ -81,7 +81,7 @@ async function buildCompositeImage(imageUri: string, qrBuf: Buffer): Promise<Buf
  * The QR encodes the verification URL: https://boleto.eth.limo/verify?event={ensName}&seat={seatNumber}
  */
 async function generateQrBuffer(ensName: string, seatNumber: string): Promise<Buffer> {
-  const url = `https://boleto.eth.limo/verify#${encodeURIComponent(ensName)}/${encodeURIComponent(seatNumber)}`
+  const url = `https://boleto.eth.link/verify#${encodeURIComponent(ensName)}/${encodeURIComponent(seatNumber)}`
   return QRCode.toBuffer(url, { type: 'png', width: 512, margin: 2 })
 }
 
