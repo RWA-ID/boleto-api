@@ -8,7 +8,7 @@ import { normalizeSlug, isValidSlug } from '../services/slugNormalize'
 import { calculateFeeHuman, calculateFeeRaw } from '../services/pricing'
 import { verifyUsdcPayment } from '../services/payment'
 import { uploadTicketMetadata } from '../services/ipfs'
-import { registerEventOnChain, registerEnsSubdomain, mintTicket, computeEventId } from '../services/contracts'
+import { registerEventOnChain, registerEnsSubdomain, batchMintTickets, mintTicket, computeEventId } from '../services/contracts'
 import { Errors } from '../errors'
 
 const router = Router()
@@ -169,6 +169,60 @@ router.post('/:invoiceId/confirm', async (req: Request, res: Response, next: Nex
       // Non-fatal — event is still activated; ENS can be retried
     }
 
+    // Batch upload NFT metadata to IPFS then mint all tickets to the promoter
+    const allTickets = await db.query.tickets.findMany({
+      where: eq(schema.tickets.eventId, event.id),
+    })
+
+    type UploadedTicket = {
+      ticketId:    string
+      seatNumber:  string
+      metadataUri: string
+      qrCodeUri:   string
+    }
+
+    const UPLOAD_BATCH = 5
+    const uploaded: UploadedTicket[] = []
+    for (let i = 0; i < allTickets.length; i += UPLOAD_BATCH) {
+      const batch = allTickets.slice(i, i + UPLOAD_BATCH)
+      const results = await Promise.all(
+        batch.map(async (t) => {
+          const csvAttributes = JSON.parse(t.metadata || '{}') as Record<string, string>
+          const { metadataUri, qrCodeUri } = await uploadTicketMetadata({
+            seatNumber:   t.seatNumber,
+            ensName:      event.ensName,
+            eventName:    event.eventName,
+            imageUri:     event.imageUri || '',
+            csvAttributes,
+          })
+          return { ticketId: t.id, seatNumber: t.seatNumber, metadataUri, qrCodeUri }
+        })
+      )
+      uploaded.push(...results)
+    }
+
+    // Single batchMint call — all NFTs go to promoter wallet initially
+    const { tokenIds, txHash: batchMintTxHash } = await batchMintTickets({
+      eventId:     onChainEventId as `0x${string}`,
+      recipients:  uploaded.map(() => event.promoterWallet as `0x${string}`),
+      seatNumbers: uploaded.map((t) => t.seatNumber),
+      tokenUris:   uploaded.map((t) => t.metadataUri),
+    })
+
+    // Persist tokenIds + metadata URIs for each ticket
+    await Promise.all(
+      uploaded.map((t, idx) =>
+        db.update(schema.tickets).set({
+          minted:      true,
+          tokenId:     tokenIds[idx] ?? null,
+          ownerWallet: event.promoterWallet,
+          mintTxHash:  batchMintTxHash,
+          metadataUri: t.metadataUri,
+          qrCodeUri:   t.qrCodeUri,
+        }).where(eq(schema.tickets.id, t.ticketId))
+      )
+    )
+
     // Auto-provision API key for this promoter wallet (once per wallet)
     let apiKey: string | null = null
     let platformId: string | undefined = event.platformId ?? undefined
@@ -203,7 +257,8 @@ router.post('/:invoiceId/confirm', async (req: Request, res: Response, next: Nex
       contractAddress: process.env.BOLETO_CONTRACT_ADDRESS,
       onChainEventId,
       ensTxHash,
-      ensSubdomain:    event.ensName,
+      batchMintTxHash,
+      ticketsMinted:   uploaded.length,
       status:          'active',
       apiKey,
       apiKeyNote: apiKey
