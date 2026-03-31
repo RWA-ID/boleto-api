@@ -30,6 +30,14 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }))
 app.use(rateLimiter)
 
+// Blockchain calls (confirm/activate) can take up to 5 min on mainnet
+app.use((req, res, next) => {
+  if (req.path.includes('/confirm')) {
+    res.setTimeout(360_000) // 6 min
+  }
+  next()
+})
+
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', service: 'boleto-eth-api', ts: new Date().toISOString() })

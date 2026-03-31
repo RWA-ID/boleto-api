@@ -100,7 +100,7 @@ export async function registerEnsSubdomain(params: {
     ],
   })
 
-  await pub.waitForTransactionReceipt({ hash })
+  await pub.waitForTransactionReceipt({ hash, timeout: 300_000 })
   return hash
 }
 
@@ -132,7 +132,7 @@ export async function registerEventOnChain(params: {
     args:         [eventId, BigInt(params.totalSeats), params.ensName, params.promoterWallet as Address],
   })
 
-  await pub.waitForTransactionReceipt({ hash })
+  await pub.waitForTransactionReceipt({ hash, timeout: 300_000 })
   return { txHash: hash, eventId }
 }
 
@@ -206,7 +206,7 @@ export async function mintTicket(params: {
     args:         [params.eventId, params.to, params.seatNumber, params.tokenUri],
   })
 
-  const receipt = await pub.waitForTransactionReceipt({ hash })
+  const receipt = await pub.waitForTransactionReceipt({ hash, timeout: 300_000, pollingInterval: 4_000 })
 
   let tokenId = '0'
   for (const log of receipt.logs) {
