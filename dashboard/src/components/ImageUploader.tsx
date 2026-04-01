@@ -6,9 +6,10 @@ import { API_BASE } from '@/lib/api'
 interface Props {
   value: string
   onChange: (ipfsUri: string) => void
+  onLocalPreview?: (blobUrl: string | null) => void
 }
 
-export function ImageUploader({ value, onChange }: Props) {
+export function ImageUploader({ value, onChange, onLocalPreview }: Props) {
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
@@ -16,7 +17,9 @@ export function ImageUploader({ value, onChange }: Props) {
 
   const handleFile = async (file: File) => {
     setError(null)
-    setPreview(URL.createObjectURL(file))
+    const blobUrl = URL.createObjectURL(file)
+    setPreview(blobUrl)
+    onLocalPreview?.(blobUrl)
     setUploading(true)
     try {
       const form = new FormData()
@@ -31,6 +34,7 @@ export function ImageUploader({ value, onChange }: Props) {
       onChange(data.uri)
     } catch (err: any) {
       setError(err.message)
+      onLocalPreview?.(null)
     } finally {
       setUploading(false)
     }
@@ -49,7 +53,7 @@ export function ImageUploader({ value, onChange }: Props) {
 
   // Gateway URL for preview of already-set IPFS values
   const displayPreview = preview || (value?.startsWith('ipfs://')
-    ? `https://ipfs.io/ipfs/${value.replace('ipfs://', '')}`
+    ? `https://cloudflare-ipfs.com/ipfs/${value.replace('ipfs://', '')}`
     : null)
 
   return (
@@ -70,7 +74,7 @@ export function ImageUploader({ value, onChange }: Props) {
               <polyline points="21 15 16 10 5 21"/>
             </svg>
             <p className="text-xs text-[#444]">Click or drag & drop event image</p>
-            <p className="text-xs text-[#333] mt-1">JPEG, PNG, GIF, WebP — max 10 MB</p>
+            <p className="text-xs text-[#333] mt-1">JPEG or PNG · max 10 MB</p>
           </>
         )}
         {uploading && (
@@ -89,7 +93,7 @@ export function ImageUploader({ value, onChange }: Props) {
       {displayPreview && (
         <button
           type="button"
-          onClick={() => { onChange(''); setPreview(null); setError(null) }}
+          onClick={() => { onChange(''); setPreview(null); setError(null); onLocalPreview?.(null) }}
           className="text-xs text-[#666] hover:text-[#ef4444] transition-colors"
         >
           Remove image

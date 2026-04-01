@@ -60,6 +60,7 @@ export default function CreateEventPage() {
   const [step, setStep]         = useState<'form' | 'invoice' | 'done'>('form')
   const [confirmTxHash, setConfirmTxHash] = useState('')
   const [showManualHash, setShowManualHash] = useState(false)
+  const [localImagePreview, setLocalImagePreview] = useState<string | null>(null)
 
   const USDC_MAINNET = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48' as const
   const USDC_ABI = [{
@@ -204,8 +205,12 @@ export default function CreateEventPage() {
                 <ImageUploader
                   value={form.imageUri || ''}
                   onChange={(uri) => update('imageUri', uri)}
+                  onLocalPreview={setLocalImagePreview}
                 />
                 <p className="text-xs text-[#555]">Appears on every ticket NFT. Leave blank to use the concert graphic.</p>
+                <p className="text-xs text-[#444] leading-relaxed">
+                  <span className="text-[#f97316] font-mono">Best dimensions:</span> 3000 × 3000 px (1:1 square) — displays perfectly on OpenSea and all marketplaces. Minimum 1000 × 1000 px.
+                </p>
               </div>
 
               {/* CSV uploader */}
@@ -264,7 +269,7 @@ export default function CreateEventPage() {
                   seatNumber={previewTicket['seat_number'] || '—'}
                   eventName={form.eventName || 'Event Name'}
                   ensName={ensPreview || 'artist-event.boleto.eth'}
-                  imageUri={form.imageUri || undefined}
+                  imageUri={localImagePreview || form.imageUri || undefined}
                   csvAttributes={previewTicket}
                 />
               ) : (
@@ -272,7 +277,7 @@ export default function CreateEventPage() {
                   seatNumber="A-101"
                   eventName={form.eventName || 'Event Name'}
                   ensName={ensPreview || 'artist-event.boleto.eth'}
-                  imageUri={form.imageUri || undefined}
+                  imageUri={localImagePreview || form.imageUri || undefined}
                   csvAttributes={{ section: 'Floor VIP', row: 'A', gate: '1', price_usdc: '150.00' }}
                 />
               )}

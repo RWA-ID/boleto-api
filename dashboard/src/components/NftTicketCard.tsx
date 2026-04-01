@@ -250,7 +250,7 @@ export default function NftTicketCard({ seatNumber, eventName, ensName, imageUri
         {/* ── IMAGE ── */}
         <div className="btk-event-image">
           {imageUri
-            ? <img src={imageUri.startsWith('ipfs://') ? `https://ipfs.io/ipfs/${imageUri.slice(7)}` : imageUri} alt={eventName} />
+            ? <img src={imageUri.startsWith('ipfs://') ? `https://cloudflare-ipfs.com/ipfs/${imageUri.slice(7)}` : imageUri} alt={eventName} />
             : <ConcertBg />
           }
           <div className="btk-holo"/>
