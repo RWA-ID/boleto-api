@@ -69,7 +69,7 @@ export default function CreateEventPage() {
     outputs: [{ name: '', type: 'bool' }],
   }] as const
 
-  const { writeContractAsync, data: payTxHash, isPending: isPaying } = useWriteContract()
+  const { writeContractAsync, data: payTxHash, isPending: isPaying, reset: resetPay } = useWriteContract()
   const { switchChainAsync } = useSwitchChain()
   const currentChainId = useChainId()
   const [payError, setPayError] = useState<string | null>(null)
@@ -117,6 +117,9 @@ export default function CreateEventPage() {
         imageUri:       form.imageUri || undefined,
         tickets,
       })
+      resetPay()
+      setPayError(null)
+      setPaying(false)
       setResult(res)
       setStep('invoice')
     } catch (err: any) {
