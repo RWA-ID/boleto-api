@@ -80,8 +80,13 @@ export default function CreateEventPage() {
 
   useEffect(() => {
     if (!isAwaitingWallet) { setWalletHint(false); return }
-    const t = setTimeout(() => setWalletHint(true), 6000)
-    return () => clearTimeout(t)
+    const hint = setTimeout(() => setWalletHint(true), 5000)
+    const reset = setTimeout(() => {
+      resetPay()
+      setPaying(false)
+      setPayError('Request timed out. Please try again.')
+    }, 45000)
+    return () => { clearTimeout(hint); clearTimeout(reset) }
   }, [isAwaitingWallet])
 
   const handlePay = async () => {
@@ -90,7 +95,14 @@ export default function CreateEventPage() {
     setWalletHint(false)
     setPaying(true)
     try {
-      if (currentChainId !== 1) await switchChainAsync({ chainId: 1 })
+      if (currentChainId !== 1) {
+        try {
+          await switchChainAsync({ chainId: 1 })
+        } catch {
+          setPayError('Please switch to Ethereum Mainnet in your wallet app, then try again.')
+          return
+        }
+      }
       await writeContractAsync({
         address: USDC_MAINNET,
         abi: USDC_ABI,
@@ -366,7 +378,7 @@ export default function CreateEventPage() {
                   </button>
                   {walletHint && (
                     <p className="text-xs text-[#f97316] font-mono text-center">
-                      No popup? Click the MetaMask icon in your browser toolbar to approve the transaction.
+                      Open your wallet app and look for a pending transaction to approve.
                     </p>
                   )}
                 </>
