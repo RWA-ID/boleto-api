@@ -74,9 +74,20 @@ export default function CreateEventPage() {
   const currentChainId = useChainId()
   const [payError, setPayError] = useState<string | null>(null)
   const [paying, setPaying] = useState(false)
+  const [walletHint, setWalletHint] = useState(false)
+
+  const isAwaitingWallet = paying || isPaying
+
+  useEffect(() => {
+    if (!isAwaitingWallet) { setWalletHint(false); return }
+    const t = setTimeout(() => setWalletHint(true), 6000)
+    return () => clearTimeout(t)
+  }, [isAwaitingWallet])
 
   const handlePay = async () => {
+    if (!result?.paymentAddress) { setPayError('Payment address not configured — contact support.'); return }
     setPayError(null)
+    setWalletHint(false)
     setPaying(true)
     try {
       if (currentChainId !== 1) await switchChainAsync({ chainId: 1 })
@@ -345,13 +356,21 @@ export default function CreateEventPage() {
               <h2 className="font-mono font-bold">Pay & Activate</h2>
 
               {!payTxHash ? (
-                <button
-                  onClick={handlePay}
-                  disabled={paying || isPaying}
-                  className="w-full bg-[#f97316] text-white font-mono font-bold py-4 rounded-lg hover:bg-[#fb923c] transition-colors disabled:opacity-50 text-lg"
-                >
-                  {(paying || isPaying) ? 'Approve in Wallet…' : `Pay $${result.feeDue} USDC`}
-                </button>
+                <>
+                  <button
+                    onClick={handlePay}
+                    disabled={isAwaitingWallet}
+                    className="w-full bg-[#f97316] text-white font-mono font-bold py-4 rounded-lg hover:bg-[#fb923c] transition-colors disabled:opacity-50 text-lg"
+                  >
+                    {isAwaitingWallet ? 'Approve in Wallet…' : `Pay $${result.feeDue} USDC`}
+                  </button>
+                  {walletHint && (
+                    <p className="text-xs text-[#f97316] font-mono text-center">
+                      No popup? Click the MetaMask icon in your browser toolbar to approve the transaction.
+                    </p>
+                  )}
+                </>
+
               ) : (
                 <div className="space-y-3">
                   <div className="bg-[#111] border border-[#22c55e]/30 rounded-lg p-3">
