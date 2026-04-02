@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useAccount, useWriteContract, useSwitchChain, useChainId } from 'wagmi'
+import { useAccount, useWriteContract, useChainId } from 'wagmi'
 import { parseUnits } from 'viem'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -70,7 +70,6 @@ export default function CreateEventPage() {
   }] as const
 
   const { writeContractAsync, data: payTxHash, isPending: isPaying, reset: resetPay } = useWriteContract()
-  const { switchChainAsync } = useSwitchChain()
   const currentChainId = useChainId()
   const [payError, setPayError] = useState<string | null>(null)
   const [paying, setPaying] = useState(false)
@@ -91,18 +90,11 @@ export default function CreateEventPage() {
 
   const handlePay = async () => {
     if (!result?.paymentAddress) { setPayError('Payment address not configured — contact support.'); return }
+    if (currentChainId !== 1) { setPayError('Please switch to Ethereum Mainnet in your wallet, then try again.'); return }
     setPayError(null)
     setWalletHint(false)
     setPaying(true)
     try {
-      if (currentChainId !== 1) {
-        try {
-          await switchChainAsync({ chainId: 1 })
-        } catch {
-          setPayError('Please switch to Ethereum Mainnet in your wallet app, then try again.')
-          return
-        }
-      }
       await writeContractAsync({
         address: USDC_MAINNET,
         abi: USDC_ABI,
@@ -378,7 +370,7 @@ export default function CreateEventPage() {
                   </button>
                   {walletHint && (
                     <p className="text-xs text-[#f97316] font-mono text-center">
-                      Open your wallet app and look for a pending transaction to approve.
+                      Open Trust Wallet on your phone — the transaction is waiting for your approval.
                     </p>
                   )}
                 </>

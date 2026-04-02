@@ -4,7 +4,7 @@ import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
-import { useAccount, useWriteContract, useSwitchChain, useChainId } from 'wagmi'
+import { useAccount, useWriteContract, useChainId } from 'wagmi'
 import { parseUnits } from 'viem'
 import { API_BASE, confirmEvent } from '@/lib/api'
 
@@ -148,7 +148,6 @@ const USDC_ABI = [{
 
 function PendingPaymentPanel({ event, onActivated }: { event: any; onActivated: (confirmed: any) => void }) {
   const { writeContractAsync, data: payTxHash, isPending: isPaying } = useWriteContract()
-  const { switchChainAsync } = useSwitchChain()
   const currentChainId = useChainId()
   const [confirming, setConfirming] = useState(false)
   const [confirmError, setConfirmError] = useState<string | null>(null)
@@ -158,10 +157,10 @@ function PendingPaymentPanel({ event, onActivated }: { event: any; onActivated: 
   const [showManual, setShowManual] = useState(false)
 
   const handlePay = async () => {
+    if (currentChainId !== 1) { setPayError('Please switch to Ethereum Mainnet in your wallet, then try again.'); return }
     setPayError(null)
     setPaying(true)
     try {
-      if (currentChainId !== 1) await switchChainAsync({ chainId: 1 })
       await writeContractAsync({
         address: USDC_MAINNET,
         abi: USDC_ABI,
