@@ -35,10 +35,12 @@ router.get('/', requireApiKey, async (req: Request, res: Response, next: NextFun
       bannerUri:    req.platform!.bannerUri,
       events: events.map((e) => ({
         id:           e.id,
+        invoiceId:    e.invoiceId,
         eventName:    e.eventName,
         ensName:      e.ensName,
         status:       e.status,
         totalTickets: e.totalTickets,
+        feeDue:       e.status === 'pending_payment' ? e.feePaidUsdc : undefined,
         eventDate:    e.eventDate,
         imageUri:     e.imageUri,
         createdAt:    e.createdAt,
@@ -145,7 +147,10 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
       (await db.query.events.findFirst({ where: eq(schema.events.ensName, id) }))
 
     if (!event) throw Errors.EVENT_NOT_FOUND()
-    res.json(event)
+    res.json({
+      ...event,
+      ...(event.status === 'pending_payment' ? { paymentAddress: process.env.PLATFORM_TREASURY_ADDRESS } : {}),
+    })
   } catch (err) {
     next(err)
   }

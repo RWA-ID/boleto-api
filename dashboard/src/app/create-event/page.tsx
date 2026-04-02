@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useAccount, useWriteContract } from 'wagmi'
+import { useAccount, useWriteContract, useSwitchChain, useChainId } from 'wagmi'
 import { parseUnits } from 'viem'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -70,6 +70,22 @@ export default function CreateEventPage() {
   }] as const
 
   const { writeContract, data: payTxHash, isPending: isPaying, error: payError } = useWriteContract()
+  const { switchChainAsync } = useSwitchChain()
+  const currentChainId = useChainId()
+
+  const handlePay = async () => {
+    try {
+      if (currentChainId !== 1) await switchChainAsync({ chainId: 1 })
+      writeContract({
+        address: USDC_MAINNET,
+        abi: USDC_ABI,
+        functionName: 'transfer',
+        args: [result.paymentAddress as `0x${string}`, parseUnits(String(result.feeDue), 6)],
+      })
+    } catch {
+      // chain switch rejected — user will see payError if writeContract also failed
+    }
+  }
 
   const update = (key: keyof FormState, value: string) => setForm((p) => ({ ...p, [key]: value }))
 
@@ -321,13 +337,7 @@ export default function CreateEventPage() {
 
               {!payTxHash ? (
                 <button
-                  onClick={() => writeContract({
-                    address: USDC_MAINNET,
-                    abi: USDC_ABI,
-                    functionName: 'transfer',
-                    args: [result.paymentAddress as `0x${string}`, parseUnits(String(result.feeDue), 6)],
-                    chainId: 1,
-                  })}
+                  onClick={handlePay}
                   disabled={isPaying}
                   className="w-full bg-[#f97316] text-white font-mono font-bold py-4 rounded-lg hover:bg-[#fb923c] transition-colors disabled:opacity-50 text-lg"
                 >

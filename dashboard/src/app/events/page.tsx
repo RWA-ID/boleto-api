@@ -4,8 +4,9 @@ import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
-import { useAccount } from 'wagmi'
-import { API_BASE } from '@/lib/api'
+import { useAccount, useWriteContract, useSwitchChain, useChainId } from 'wagmi'
+import { parseUnits } from 'viem'
+import { API_BASE, confirmEvent } from '@/lib/api'
 
 // ── Shared helpers ────────────────────────────────────────────────────────────
 
@@ -136,6 +137,127 @@ function BrandingEditor({ apiKey, initial }: { apiKey: string; initial: { promot
   )
 }
 
+// ── Pending payment panel ─────────────────────────────────────────────────────
+
+const USDC_MAINNET = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48' as const
+const USDC_ABI = [{
+  name: 'transfer', type: 'function', stateMutability: 'nonpayable',
+  inputs: [{ name: 'to', type: 'address' }, { name: 'value', type: 'uint256' }],
+  outputs: [{ name: '', type: 'bool' }],
+}] as const
+
+function PendingPaymentPanel({ event, onActivated }: { event: any; onActivated: (confirmed: any) => void }) {
+  const { writeContract, data: payTxHash, isPending: isPaying, error: payError } = useWriteContract()
+  const { switchChainAsync } = useSwitchChain()
+  const currentChainId = useChainId()
+  const [confirming, setConfirming] = useState(false)
+  const [confirmError, setConfirmError] = useState<string | null>(null)
+  const [manualHash, setManualHash] = useState('')
+  const [showManual, setShowManual] = useState(false)
+
+  const handlePay = async () => {
+    try {
+      if (currentChainId !== 1) await switchChainAsync({ chainId: 1 })
+      writeContract({
+        address: USDC_MAINNET,
+        abi: USDC_ABI,
+        functionName: 'transfer',
+        args: [event.paymentAddress as `0x${string}`, parseUnits(String(event.feePaidUsdc), 6)],
+      })
+    } catch { /* chain switch rejected */ }
+  }
+
+  const handleConfirm = async (txHash: string) => {
+    setConfirming(true)
+    setConfirmError(null)
+    try {
+      const confirmed = await confirmEvent(event.invoiceId, txHash) as any
+      if (confirmed.apiKey) localStorage.setItem('boleto_api_key', confirmed.apiKey)
+      onActivated(confirmed)
+    } catch (err: any) {
+      setConfirmError(err.message)
+    } finally {
+      setConfirming(false)
+    }
+  }
+
+  return (
+    <div className="bg-[#1a0a00] border-2 border-[#f97316]/50 rounded-xl p-6 space-y-4">
+      <div className="flex items-center gap-2">
+        <span className="w-2 h-2 rounded-full bg-[#f97316] animate-pulse" />
+        <h2 className="font-mono font-bold text-[#f97316]">Payment Required to Activate</h2>
+      </div>
+
+      <div className="bg-[#111] rounded-lg p-4 space-y-2">
+        <div className="flex justify-between text-sm">
+          <span className="text-[#666]">Amount Due</span>
+          <span className="font-mono font-bold text-[#f97316] text-lg">${event.feePaidUsdc} USDC</span>
+        </div>
+        <div className="flex justify-between text-sm">
+          <span className="text-[#666]">Invoice ID</span>
+          <span className="font-mono text-xs text-[#555]">{event.invoiceId}</span>
+        </div>
+        <div className="pt-1">
+          <p className="text-xs text-[#555]">Send USDC on Ethereum to</p>
+          <p className="font-mono text-xs text-[#f0f0f0] break-all">{event.paymentAddress}</p>
+        </div>
+      </div>
+
+      {!payTxHash ? (
+        <button
+          onClick={handlePay}
+          disabled={isPaying}
+          className="w-full bg-[#f97316] text-white font-mono font-bold py-3 rounded-lg hover:bg-[#fb923c] transition-colors disabled:opacity-50"
+        >
+          {isPaying ? 'Approve in Wallet…' : `Pay $${event.feePaidUsdc} USDC`}
+        </button>
+      ) : (
+        <div className="space-y-3">
+          <div className="bg-[#111] border border-[#22c55e]/30 rounded-lg p-3">
+            <p className="text-xs text-[#22c55e] mb-1">Payment submitted</p>
+            <p className="font-mono text-xs text-[#666] break-all">{payTxHash}</p>
+          </div>
+          <button
+            onClick={() => handleConfirm(payTxHash)}
+            disabled={confirming}
+            className="w-full bg-[#22c55e] text-black font-mono font-bold py-3 rounded-lg hover:bg-[#16a34a] transition-colors disabled:opacity-50"
+          >
+            {confirming ? 'Activating event…' : 'Activate Event'}
+          </button>
+        </div>
+      )}
+
+      {payError && <p className="text-red-400 text-xs font-mono">{(payError as any).shortMessage ?? payError.message}</p>}
+      {confirmError && <p className="text-red-400 text-xs font-mono">{confirmError}</p>}
+
+      <button
+        type="button"
+        onClick={() => setShowManual((v) => !v)}
+        className="text-xs text-[#555] hover:text-[#666] underline w-full text-center"
+      >
+        {showManual ? 'Hide manual entry' : 'Already sent manually? Enter tx hash'}
+      </button>
+      {showManual && (
+        <div className="space-y-2">
+          <input
+            type="text" placeholder="0x... transaction hash"
+            value={manualHash}
+            onChange={(e) => setManualHash(e.target.value)}
+            className="w-full bg-[#111] border border-[#1f1f1f] rounded px-3 py-2 font-mono text-[#f0f0f0] focus:outline-none focus:border-[#f97316] text-sm"
+          />
+          <button
+            onClick={() => handleConfirm(manualHash)}
+            disabled={confirming || !manualHash || manualHash.length !== 66}
+            className="w-full bg-[#333] text-white font-mono font-bold py-2 rounded-lg hover:bg-[#444] transition-colors disabled:opacity-50 text-sm"
+          >
+            {confirming ? 'Confirming…' : 'Confirm Manual Payment'}
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Single event dashboard ────────────────────────────────────────────────────
 
 function EventDashboard({ eventId, apiKey }: { eventId: string; apiKey?: string }) {
@@ -144,6 +266,7 @@ function EventDashboard({ eventId, apiKey }: { eventId: string; apiKey?: string 
   const [profile,   setProfile]   = useState<any>(null)
   const [loading,   setLoading]   = useState(true)
   const [error,     setError]     = useState<string | null>(null)
+  const [activated, setActivated] = useState<any>(null)
 
   useEffect(() => {
     const headers: Record<string, string> = {}
@@ -184,9 +307,29 @@ function EventDashboard({ eventId, apiKey }: { eventId: string; apiKey?: string 
           <h1 className="font-mono text-2xl font-bold">{event.eventName}</h1>
         </div>
         <span className={`px-3 py-1 rounded-full text-xs font-mono font-bold flex-shrink-0 ${
-          event.status === 'active' ? 'bg-[#22c55e]/20 text-[#22c55e]' : 'bg-[#f97316]/20 text-[#f97316]'
-        }`}>{event.status}</span>
+          (activated?.status ?? event.status) === 'active' ? 'bg-[#22c55e]/20 text-[#22c55e]' : 'bg-[#f97316]/20 text-[#f97316]'
+        }`}>{activated?.status ?? event.status}</span>
       </div>
+
+      {/* Pending payment panel */}
+      {event.status === 'pending_payment' && !activated && (
+        <PendingPaymentPanel event={event} onActivated={(confirmed) => setActivated(confirmed)} />
+      )}
+
+      {/* Post-activation success */}
+      {activated && (
+        <div className="bg-[#0d1f0d] border border-[#22c55e]/40 rounded-xl p-5 space-y-3">
+          <p className="font-mono font-bold text-[#22c55e]">Event activated!</p>
+          {activated.apiKey && (
+            <div className="space-y-1">
+              <p className="text-xs text-[#aaa]">Your API Key — save this now, it won&apos;t be shown again.</p>
+              <code className="block bg-[#111] border border-[#22c55e]/30 rounded px-3 py-2 font-mono text-sm text-[#22c55e] break-all">
+                {activated.apiKey}
+              </code>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Event Info */}
       <div className="bg-[#161616] border border-[#1f1f1f] rounded-xl p-6 space-y-3">
@@ -302,16 +445,23 @@ function MyEvents({ apiKey }: { apiKey: string }) {
         <div className="space-y-3">
           {events.map((e: any) => (
             <Link key={e.id} href={`/events?id=${e.id}&key=${apiKey}`}
-              className="block bg-[#161616] border border-[#1f1f1f] rounded-xl p-5 hover:border-[#f97316]/40 transition-colors group">
+              className={`block bg-[#161616] border rounded-xl p-5 hover:border-[#f97316]/40 transition-colors group ${
+                e.status === 'pending_payment' ? 'border-[#f97316]/30' : 'border-[#1f1f1f]'
+              }`}>
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <p className="font-mono font-bold text-[#f0f0f0] group-hover:text-[#f97316] transition-colors truncate">{e.eventName}</p>
                   <p className="text-xs text-[#f97316] font-mono mt-0.5">{e.ensName}</p>
                   <p className="text-xs text-[#555] mt-1">{e.totalTickets?.toLocaleString()} tickets{e.eventDate ? ` · ${new Date(e.eventDate).toLocaleDateString()}` : ''}</p>
                 </div>
-                <span className={`px-2 py-0.5 rounded-full text-xs font-mono font-bold flex-shrink-0 ${
-                  e.status === 'active' ? 'bg-[#22c55e]/20 text-[#22c55e]' : 'bg-[#f97316]/10 text-[#f97316]'
-                }`}>{e.status}</span>
+                <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-mono font-bold ${
+                    e.status === 'active' ? 'bg-[#22c55e]/20 text-[#22c55e]' : 'bg-[#f97316]/10 text-[#f97316]'
+                  }`}>{e.status}</span>
+                  {e.status === 'pending_payment' && (
+                    <span className="text-xs text-[#f97316] font-mono">Complete payment →</span>
+                  )}
+                </div>
               </div>
             </Link>
           ))}
