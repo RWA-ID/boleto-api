@@ -69,21 +69,27 @@ export default function CreateEventPage() {
     outputs: [{ name: '', type: 'bool' }],
   }] as const
 
-  const { writeContract, data: payTxHash, isPending: isPaying, error: payError } = useWriteContract()
+  const { writeContractAsync, data: payTxHash, isPending: isPaying } = useWriteContract()
   const { switchChainAsync } = useSwitchChain()
   const currentChainId = useChainId()
+  const [payError, setPayError] = useState<string | null>(null)
+  const [paying, setPaying] = useState(false)
 
   const handlePay = async () => {
+    setPayError(null)
+    setPaying(true)
     try {
       if (currentChainId !== 1) await switchChainAsync({ chainId: 1 })
-      writeContract({
+      await writeContractAsync({
         address: USDC_MAINNET,
         abi: USDC_ABI,
         functionName: 'transfer',
         args: [result.paymentAddress as `0x${string}`, parseUnits(String(result.feeDue), 6)],
       })
-    } catch {
-      // chain switch rejected — user will see payError if writeContract also failed
+    } catch (err: any) {
+      setPayError(err?.shortMessage ?? err?.message ?? 'Transaction failed')
+    } finally {
+      setPaying(false)
     }
   }
 
@@ -338,10 +344,10 @@ export default function CreateEventPage() {
               {!payTxHash ? (
                 <button
                   onClick={handlePay}
-                  disabled={isPaying}
+                  disabled={paying || isPaying}
                   className="w-full bg-[#f97316] text-white font-mono font-bold py-4 rounded-lg hover:bg-[#fb923c] transition-colors disabled:opacity-50 text-lg"
                 >
-                  {isPaying ? 'Approve in Wallet…' : `Pay $${result.feeDue} USDC`}
+                  {(paying || isPaying) ? 'Approve in Wallet…' : `Pay $${result.feeDue} USDC`}
                 </button>
               ) : (
                 <div className="space-y-3">
@@ -359,7 +365,7 @@ export default function CreateEventPage() {
                 </div>
               )}
 
-              {payError && <p className="text-red-400 text-xs font-mono">{(payError as any).shortMessage ?? payError.message}</p>}
+              {payError && <p className="text-red-400 text-xs font-mono">{payError}</p>}
 
               <button
                 type="button"

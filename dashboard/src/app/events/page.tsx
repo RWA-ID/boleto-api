@@ -147,24 +147,32 @@ const USDC_ABI = [{
 }] as const
 
 function PendingPaymentPanel({ event, onActivated }: { event: any; onActivated: (confirmed: any) => void }) {
-  const { writeContract, data: payTxHash, isPending: isPaying, error: payError } = useWriteContract()
+  const { writeContractAsync, data: payTxHash, isPending: isPaying } = useWriteContract()
   const { switchChainAsync } = useSwitchChain()
   const currentChainId = useChainId()
   const [confirming, setConfirming] = useState(false)
   const [confirmError, setConfirmError] = useState<string | null>(null)
+  const [payError, setPayError] = useState<string | null>(null)
+  const [paying, setPaying] = useState(false)
   const [manualHash, setManualHash] = useState('')
   const [showManual, setShowManual] = useState(false)
 
   const handlePay = async () => {
+    setPayError(null)
+    setPaying(true)
     try {
       if (currentChainId !== 1) await switchChainAsync({ chainId: 1 })
-      writeContract({
+      await writeContractAsync({
         address: USDC_MAINNET,
         abi: USDC_ABI,
         functionName: 'transfer',
         args: [event.paymentAddress as `0x${string}`, parseUnits(String(event.feePaidUsdc), 6)],
       })
-    } catch { /* chain switch rejected */ }
+    } catch (err: any) {
+      setPayError(err?.shortMessage ?? err?.message ?? 'Transaction failed')
+    } finally {
+      setPaying(false)
+    }
   }
 
   const handleConfirm = async (txHash: string) => {
@@ -206,10 +214,10 @@ function PendingPaymentPanel({ event, onActivated }: { event: any; onActivated: 
       {!payTxHash ? (
         <button
           onClick={handlePay}
-          disabled={isPaying}
+          disabled={paying || isPaying}
           className="w-full bg-[#f97316] text-white font-mono font-bold py-3 rounded-lg hover:bg-[#fb923c] transition-colors disabled:opacity-50"
         >
-          {isPaying ? 'Approve in Wallet…' : `Pay $${event.feePaidUsdc} USDC`}
+          {(paying || isPaying) ? 'Approve in Wallet…' : `Pay $${event.feePaidUsdc} USDC`}
         </button>
       ) : (
         <div className="space-y-3">
@@ -227,7 +235,7 @@ function PendingPaymentPanel({ event, onActivated }: { event: any; onActivated: 
         </div>
       )}
 
-      {payError && <p className="text-red-400 text-xs font-mono">{(payError as any).shortMessage ?? payError.message}</p>}
+      {payError && <p className="text-red-400 text-xs font-mono">{payError}</p>}
       {confirmError && <p className="text-red-400 text-xs font-mono">{confirmError}</p>}
 
       <button
