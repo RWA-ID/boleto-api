@@ -108,7 +108,7 @@ boleto-eth/
 - **Contracts:** Solidity 0.8.24, Foundry, OpenZeppelin v5
 - **API:** Express + TypeScript, Drizzle ORM, PostgreSQL, Viem, Pinata (IPFS)
 - **Dashboard:** Next.js 14, RainbowKit + wagmi v2, Tailwind CSS
-- **Infrastructure:** Railway (API + DB), IPFS via ENS contenthash (`boleto.eth`)
+- **Infrastructure:** Railway (API + DB), Pinata IPFS via ENS contenthash (`boleto.eth`)
 
 ---
 
