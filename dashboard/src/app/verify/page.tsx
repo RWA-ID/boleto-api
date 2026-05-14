@@ -111,6 +111,68 @@ function VerifyContent() {
   }
 
   if (status === 'invalid') {
+    // No scan params yet — show idle state, not an error.
+    if (!ensName && !seatNum) {
+      return (
+        <div className="py-12 space-y-8">
+          <div>
+            <div className="text-[12px] font-semibold uppercase tracking-[0.14em] mb-3" style={{ color: 'var(--accent-400)' }}>
+              Gate scanner
+            </div>
+            <h1 style={{
+              fontFamily: 'var(--font-display)', fontSize: 36, fontWeight: 400,
+              letterSpacing: '-0.02em', color: 'white', lineHeight: 1.05, marginBottom: 12,
+            }}>
+              Awaiting a ticket scan.
+            </h1>
+            <p style={{ color: 'var(--console-text-dim)', fontSize: 15, lineHeight: 1.6, maxWidth: '52ch' }}>
+              This page verifies tickets when opened from a QR code at the gate. To start scanning,
+              open the handheld scanner — or paste the seat ENS to verify manually.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3" style={{ maxWidth: 560 }}>
+            <Link href="/scan" style={{
+              padding: 18,
+              background: 'var(--console-card)',
+              border: '1px solid var(--console-line)',
+              borderRadius: 10,
+              display: 'block',
+            }}>
+              <div style={{ fontSize: 14, fontWeight: 500, color: 'white', marginBottom: 4 }}>Open the scanner</div>
+              <div style={{ fontSize: 12.5, color: 'var(--console-text-dim)' }}>Camera-based, phone-friendly →</div>
+            </Link>
+            <Link href="/api-keys" style={{
+              padding: 18,
+              background: 'var(--console-card)',
+              border: '1px solid var(--console-line)',
+              borderRadius: 10,
+              display: 'block',
+            }}>
+              <div style={{ fontSize: 14, fontWeight: 500, color: 'white', marginBottom: 4 }}>Set API key</div>
+              <div style={{ fontSize: 12.5, color: 'var(--console-text-dim)' }}>Required to redeem at the gate →</div>
+            </Link>
+          </div>
+
+          <div style={{
+            padding: 20,
+            background: 'var(--console-card)',
+            border: '1px solid var(--console-line)',
+            borderRadius: 12,
+            maxWidth: 560,
+          }}>
+            <div className="text-[11px] font-semibold uppercase tracking-[0.14em] mb-2" style={{ color: 'var(--console-text-mute)' }}>
+              How it works
+            </div>
+            <ol style={{ paddingLeft: 18, margin: 0, color: 'var(--console-text-dim)', fontSize: 13.5, lineHeight: 1.7 }}>
+              <li>Scan a ticket QR with the handheld at the gate.</li>
+              <li>The QR opens this URL with <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--console-text)' }}>#ens/seat</span>.</li>
+              <li>Tap <span style={{ color: 'white' }}>Redeem</span> to admit the guest.</li>
+            </ol>
+          </div>
+        </div>
+      )
+    }
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-6 text-center">
         <div className="w-24 h-24 rounded-full bg-red-500/10 border-2 border-red-500 flex items-center justify-center">

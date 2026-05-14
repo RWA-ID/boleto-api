@@ -7,6 +7,7 @@ import { useAccount, useWriteContract, useChainId } from 'wagmi'
 import { parseUnits } from 'viem'
 import { API_BASE, confirmEvent } from '@/lib/api'
 import { AppShell } from '@/components/AppShell'
+import { ConnectButton } from '@rainbow-me/rainbowkit'
 
 // ── Shared helpers ────────────────────────────────────────────────────────────
 
@@ -402,10 +403,22 @@ Authorization: Bearer YOUR_API_KEY
 
 // ── My Events list ────────────────────────────────────────────────────────────
 
+function StatusChip({ status }: { status: string }) {
+  const map: Record<string, { cls: string; label: string }> = {
+    active:           { cls: 'chip-success', label: 'On sale' },
+    pending_payment:  { cls: 'chip-warn',    label: 'Pending payment' },
+    sold_out:         { cls: 'chip-info',    label: 'Sold out' },
+    completed:        { cls: 'chip',         label: 'Completed' },
+  }
+  const { cls, label } = map[status] ?? { cls: 'chip', label: status }
+  return <span className={`chip ${cls}`}><span className="chip-dot" /> {label}</span>
+}
+
 function MyEvents({ apiKey }: { apiKey: string }) {
   const [data,    setData]    = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error,   setError]   = useState<string | null>(null)
+  const [filter,  setFilter]  = useState<string>('all')
 
   useEffect(() => {
     fetch(`${API_BASE}/v1/events`, {
@@ -422,60 +435,138 @@ function MyEvents({ apiKey }: { apiKey: string }) {
   )
 
   const { promoterName, bannerUri, events = [] } = data
+  const filters = ['all', 'active', 'pending_payment', 'sold_out', 'completed']
+  const filtered = events.filter((e: any) => filter === 'all' || e.status === filter)
+  const totalTickets   = events.reduce((s: number, e: any) => s + (e.totalTickets ?? 0), 0)
+  const activeCount    = events.filter((e: any) => e.status === 'active').length
 
   return (
     <div className="space-y-6">
-      {/* Promoter banner */}
-      {bannerUri && (
-        <div className="rounded-xl overflow-hidden border border-[#1F2A44] h-32">
-          <img src={bannerUri.startsWith('ipfs://') ? bannerUri.replace('ipfs://', 'https://ipfs.io/ipfs/') : bannerUri}
-            alt="Banner" className="w-full h-full object-cover" />
-        </div>
-      )}
-
-      <div className="flex items-center justify-between">
+      <div className="flex items-end justify-between mb-2">
         <div>
-          {promoterName && <p className="text-xs text-[#E25822] font-mono">{promoterName}</p>}
-          <h1 className="font-mono text-2xl font-bold">My Events</h1>
+          {promoterName && <div className="eyebrow" style={{ color: 'var(--accent-400)', marginBottom: 6 }}>{promoterName}</div>}
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: 32, fontWeight: 400, letterSpacing: '-0.02em', color: 'white' }}>Events</div>
+          <div className="text-[13.5px] mt-1" style={{ color: 'var(--console-text-dim)' }}>
+            {events.length} event{events.length === 1 ? '' : 's'} · {activeCount} active · {totalTickets.toLocaleString()} tickets issued
+          </div>
         </div>
-        <Link href="/create-event"
-          className="px-4 py-2 bg-[#E25822] text-white rounded-lg text-sm font-mono font-bold hover:bg-[#C24A1E] transition-colors">
-          + New Event
-        </Link>
+        <Link href="/create-event" className="btn btn-primary btn-sm">+ New event</Link>
       </div>
 
+      {/* KPI strip */}
+      <div className="grid grid-cols-4 gap-3">
+        {[
+          ['Inventory issued',  totalTickets.toLocaleString(), 'tickets'],
+          ['Active events',     String(activeCount),           'on sale'],
+          ['Total events',      String(events.length),         'lifetime'],
+          ['API key',           '••••' + apiKey.slice(-4),     'in use'],
+        ].map(([k, v, u]) => (
+          <div key={k as string} style={{
+            padding: 16,
+            background: 'var(--console-card)',
+            border: '1px solid var(--console-line)',
+            borderRadius: 10,
+          }}>
+            <div style={{ fontSize: 11, color: 'var(--console-text-mute)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 8 }}>{k}</div>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+              <span style={{ fontFamily: 'var(--font-display)', fontSize: 24, color: 'white', letterSpacing: '-0.02em' }}>{v}</span>
+              <span style={{ fontSize: 12, color: 'var(--console-text-mute)' }}>{u}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Filter row */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 8,
+        padding: '10px 12px',
+        background: 'var(--console-card)',
+        border: '1px solid var(--console-line)',
+        borderTopLeftRadius: 8, borderTopRightRadius: 8,
+      }}>
+        <div className="flex gap-1">
+          {filters.map(f => (
+            <button key={f} onClick={() => setFilter(f)} style={{
+              padding: '6px 12px',
+              borderRadius: 5,
+              fontSize: 12.5, fontWeight: 500,
+              background: filter === f ? 'rgba(255,255,255,0.06)' : 'transparent',
+              color: filter === f ? 'var(--console-text)' : 'var(--console-text-dim)',
+              border: 'none', cursor: 'pointer',
+              textTransform: 'capitalize', whiteSpace: 'nowrap',
+            }}>{f === 'all' ? 'All' : f.replace('_', ' ')}</button>
+          ))}
+        </div>
+      </div>
+
+      {/* Events table */}
       {events.length === 0 ? (
-        <div className="text-center py-20 text-[#8B95AB] font-mono">
-          No events yet. <Link href="/create-event" className="text-[#E25822] hover:underline">Create your first event →</Link>
+        <div style={{
+          padding: 64, textAlign: 'center',
+          background: 'var(--console-card)',
+          border: '1px solid var(--console-line)',
+          borderTopLeftRadius: 0, borderTopRightRadius: 0,
+          borderRadius: 8,
+        }}>
+          <div style={{ color: 'var(--console-text-dim)', fontSize: 14, marginBottom: 14 }}>No events yet.</div>
+          <Link href="/create-event" className="btn btn-primary btn-sm">Create your first event</Link>
         </div>
       ) : (
-        <div className="space-y-3">
-          {events.map((e: any) => (
-            <Link key={e.id} href={`/events?id=${e.id}&key=${apiKey}`}
-              className={`block bg-[#131C30] border rounded-xl p-5 hover:border-[#E25822]/40 transition-colors group ${
-                e.status === 'pending_payment' ? 'border-[#E25822]/30' : 'border-[#1F2A44]'
-              }`}>
-              <div className="flex items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <p className="font-mono font-bold text-[#E8ECF3] group-hover:text-[#E25822] transition-colors truncate">{e.eventName}</p>
-                  <p className="text-xs text-[#E25822] font-mono mt-0.5">{e.ensName}</p>
-                  <p className="text-xs text-[#5E6A85] mt-1">{e.totalTickets?.toLocaleString()} tickets{e.eventDate ? ` · ${new Date(e.eventDate).toLocaleDateString()}` : ''}</p>
-                </div>
-                <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-mono font-bold ${
-                    e.status === 'active' ? 'bg-[#22c55e]/20 text-[#22c55e]' : 'bg-[#E25822]/10 text-[#E25822]'
-                  }`}>{e.status}</span>
-                  {e.status === 'pending_payment' && (
-                    <span className="text-xs text-[#E25822] font-mono">Complete payment →</span>
-                  )}
-                </div>
+        <div style={{
+          background: 'var(--console-card)',
+          border: '1px solid var(--console-line)',
+          borderTopLeftRadius: 0, borderTopRightRadius: 0,
+          borderBottomLeftRadius: 8, borderBottomRightRadius: 8,
+          overflow: 'hidden',
+        }}>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '2.4fr 1.6fr 1fr 1.3fr 80px',
+            padding: '10px 16px',
+            fontSize: 11, fontWeight: 600, letterSpacing: '0.12em',
+            color: 'var(--console-text-mute)', textTransform: 'uppercase',
+            borderBottom: '1px solid var(--console-line)',
+            background: 'rgba(255,255,255,0.02)',
+          }}>
+            <div>Event</div>
+            <div>Date · ENS</div>
+            <div>Status</div>
+            <div>Inventory</div>
+            <div></div>
+          </div>
+          {filtered.map((e: any, i: number) => (
+            <Link
+              key={e.id}
+              href={`/events?id=${e.id}&key=${apiKey}`}
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '2.4fr 1.6fr 1fr 1.3fr 80px',
+                padding: '14px 16px', alignItems: 'center',
+                borderBottom: i < filtered.length - 1 ? '1px solid var(--console-line)' : 'none',
+                cursor: 'pointer',
+                transition: 'background 120ms',
+                color: 'inherit',
+              }}
+            >
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--console-text)' }}>{e.eventName}</div>
+                <div style={{ fontSize: 11.5, color: 'var(--accent-400)', fontFamily: 'var(--font-mono)', marginTop: 2 }}>{e.ensName}</div>
+              </div>
+              <div style={{ fontSize: 13, color: 'var(--console-text-dim)', fontFamily: 'var(--font-mono)' }}>
+                {e.eventDate ? new Date(e.eventDate).toLocaleDateString() : '—'}
+              </div>
+              <div><StatusChip status={e.status} /></div>
+              <div style={{ fontSize: 13, color: 'var(--console-text)', fontFamily: 'var(--font-mono)' }}>
+                {(e.totalTickets ?? 0).toLocaleString()} <span style={{ color: 'var(--console-text-mute)' }}>tickets</span>
+              </div>
+              <div style={{ textAlign: 'right', color: 'var(--console-text-mute)' }}>
+                <span style={{ fontSize: 13 }}>›</span>
               </div>
             </Link>
           ))}
         </div>
       )}
 
-      {/* Branding editor */}
       <BrandingEditor apiKey={apiKey} initial={{ promoterName, bannerUri }} />
     </div>
   )

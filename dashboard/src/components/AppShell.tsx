@@ -82,26 +82,6 @@ export function AppShell({
             </div>
             <Icon name="chevronDown" size={14} style={{ color: 'var(--console-text-mute)' }} />
           </div>
-          <div style={{
-            marginTop: 8,
-            display: 'flex', gap: 4,
-            padding: 3,
-            background: 'rgba(255,255,255,0.04)',
-            border: '1px solid var(--console-line)',
-            borderRadius: 6,
-          }}>
-            {['Test', 'Live'].map((m, i) => (
-              <button key={m} style={{
-                flex: 1,
-                background: i === 1 ? 'var(--accent-500)' : 'transparent',
-                color: i === 1 ? '#fff' : 'var(--console-text-dim)',
-                border: 'none', borderRadius: 4,
-                padding: '4px 8px',
-                fontSize: 11.5, fontWeight: 600, letterSpacing: '0.06em',
-                cursor: 'pointer',
-              }}>{m}</button>
-            ))}
-          </div>
         </div>
 
         <nav style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -143,10 +123,10 @@ export function AppShell({
             border: '1px solid rgba(226,88,34,0.18)',
           }}>
             <div style={{ fontSize: 11.5, color: 'var(--accent-400)', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 4 }}>
-              Test mode
+              Live · Ethereum
             </div>
             <div style={{ fontSize: 12, color: 'var(--console-text-dim)', lineHeight: 1.5 }}>
-              You&apos;re in test mode. No real USDC is moving.
+              Issuance + royalties settle on mainnet in USDC.
             </div>
           </div>
         </div>

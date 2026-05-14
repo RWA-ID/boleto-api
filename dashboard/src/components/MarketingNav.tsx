@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useI18n } from '@/lib/i18n'
+import { CTAButton } from './CTAButton'
 
 export function Wordmark({ small = false, inverted = false, accent = 'var(--accent-600)' }: {
   small?: boolean; inverted?: boolean; accent?: string
@@ -87,7 +88,7 @@ export function MarketingNav() {
               >{l.toUpperCase()}</button>
             ))}
           </div>
-          <Link href="/events" className="btn btn-ghost btn-sm">Sign in</Link>
+          <CTAButton href="/events" variant="ghost" size="sm" connectLabel="Connect to sign in">Sign in</CTAButton>
           <Link href="/#contact" className="btn btn-primary btn-sm">Talk to sales</Link>
         </div>
       </div>
