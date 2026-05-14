@@ -3,10 +3,10 @@
 import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { useAccount, useWriteContract, useChainId } from 'wagmi'
 import { parseUnits } from 'viem'
 import { API_BASE, confirmEvent } from '@/lib/api'
+import { AppShell } from '@/components/AppShell'
 
 // ── Shared helpers ────────────────────────────────────────────────────────────
 
@@ -497,17 +497,77 @@ function ConnectPrompt() {
 function ApiKeyGate({ onKey }: { onKey: (k: string) => void }) {
   const [key, setKey] = useState('')
   return (
-    <div className="text-center py-20 space-y-4 max-w-md mx-auto">
-      <p className="text-[#8B95AB] font-mono text-sm">Enter your API key to view your events</p>
-      <div className="flex gap-2">
-        <input value={key} onChange={(e) => setKey(e.target.value)}
-          placeholder="blt_..."
-          className="flex-1 bg-[#131C30] border border-[#1F2A44] rounded-lg px-3 py-2 text-sm text-[#E8ECF3] placeholder-[#5E6A85] focus:outline-none focus:border-[#E25822] font-mono"
-        />
-        <button onClick={() => key && onKey(key)}
-          className="px-4 py-2 bg-[#E25822] text-white rounded-lg text-sm font-mono font-bold hover:bg-[#C24A1E] transition-colors">
-          Go
-        </button>
+    <div className="max-w-2xl mx-auto py-16">
+      <div className="text-[12px] font-semibold uppercase tracking-[0.14em] text-[#ED7144] mb-3">
+        Welcome to your console
+      </div>
+      <h1 style={{
+        fontFamily: 'var(--font-display)', fontSize: 40, fontWeight: 400,
+        letterSpacing: '-0.02em', color: 'white', lineHeight: 1.05, marginBottom: 16,
+      }}>
+        Paste your API key to load your events.
+      </h1>
+      <p className="text-[15px] leading-relaxed mb-10" style={{ color: 'var(--console-text-dim)' }}>
+        Server-side keys give your team read access to event inventory, mint logs, and royalty payouts.
+        Treat them like a database password — rotate on suspicion.
+      </p>
+
+      <div style={{
+        background: 'var(--console-card)',
+        border: '1px solid var(--console-line)',
+        borderRadius: 12,
+        padding: 24,
+      }}>
+        <label className="block text-[12px] font-semibold uppercase tracking-[0.12em] mb-2" style={{ color: 'var(--console-text-mute)' }}>
+          API key
+        </label>
+        <div className="flex gap-2">
+          <input
+            value={key}
+            onChange={(e) => setKey(e.target.value)}
+            placeholder="blt_live_..."
+            className="input mono flex-1"
+            style={{ background: '#0F1626', borderColor: '#1F2A44', color: '#E8ECF3' }}
+            onKeyDown={(e) => { if (e.key === 'Enter' && key) onKey(key.trim()) }}
+          />
+          <button
+            onClick={() => key && onKey(key.trim())}
+            className="btn btn-primary"
+            disabled={!key.trim()}
+          >
+            Load events
+          </button>
+        </div>
+        <p className="mt-3 text-[12.5px]" style={{ color: 'var(--console-text-mute)' }}>
+          Your key is stored in this browser&apos;s session only — never sent anywhere except the boleto.eth API.
+        </p>
+      </div>
+
+      <div className="mt-8 grid grid-cols-2 gap-3">
+        <Link href="/api-keys" style={{
+          padding: '16px 18px',
+          background: 'var(--console-card)',
+          border: '1px solid var(--console-line)',
+          borderRadius: 10,
+          display: 'block',
+        }}>
+          <div className="text-[14px] font-medium text-white mb-1">Need a key?</div>
+          <div className="text-[12.5px]" style={{ color: 'var(--console-text-dim)' }}>
+            Generate one in API keys →
+          </div>
+        </Link>
+        <Link href="/docs" style={{
+          padding: '16px 18px',
+          background: 'var(--console-card)',
+          border: '1px solid var(--console-line)',
+          borderRadius: 10,
+          display: 'block',
+        }}>
+          <div className="text-[14px] font-medium text-white mb-1">First time here?</div>
+          <div className="text-[12.5px]" style={{ color: 'var(--console-text-dim)' }}>
+            Read the quickstart →
+          </div>
+        </Link>
       </div>
     </div>
   )
@@ -550,20 +610,12 @@ function EventsRoot() {
 
 export default function EventPage() {
   return (
-    <main className="min-h-screen bg-[#0A0F1A] text-[#E8ECF3]">
-      <nav className="border-b border-[#1F2A44] px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link href="/" className="font-mono text-[#E25822] font-bold">boleto.eth</Link>
-          <span className="text-[#8B95AB]">/</span>
-          <span className="text-[#E8ECF3]">Events</span>
-        </div>
-        <ConnectButton />
-      </nav>
-      <div className="max-w-4xl mx-auto px-6 py-12">
+    <AppShell active="events">
+      <div className="max-w-5xl mx-auto px-8 py-10">
         <Suspense fallback={<div className="text-center py-20 text-[#8B95AB] font-mono animate-pulse">Loading…</div>}>
           <EventsRoot />
         </Suspense>
       </div>
-    </main>
+    </AppShell>
   )
 }

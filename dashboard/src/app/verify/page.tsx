@@ -3,6 +3,7 @@
 import { useEffect, useState, Suspense } from 'react'
 import Link from 'next/link'
 import { API_BASE } from '@/lib/api'
+import { AppShell } from '@/components/AppShell'
 
 function VerifyContent() {
   const [ensName,   setEnsName]   = useState<string | null>(null)
@@ -261,17 +262,12 @@ function VerifyContent() {
 
 export default function VerifyPage() {
   return (
-    <main className="min-h-screen bg-[#0A0F1A] text-[#E8ECF3]">
-      <nav className="border-b border-[#1F2A44] px-6 py-4 flex items-center gap-4">
-        <Link href="/" className="font-mono text-[#E25822] font-bold">boleto.eth</Link>
-        <span className="text-[#8B95AB]">/</span>
-        <span className="text-[#E8ECF3]">Verify Ticket</span>
-      </nav>
-      <div className="max-w-lg mx-auto px-6 py-12">
+    <AppShell active="verify">
+      <div className="max-w-lg mx-auto px-8 py-10">
         <Suspense fallback={<div className="text-center py-20 text-[#8B95AB] font-mono animate-pulse">Loading…</div>}>
           <VerifyContent />
         </Suspense>
       </div>
-    </main>
+    </AppShell>
   )
 }

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { ConnectButton } from '@/components/ConnectButton'
+import { AppShell } from '@/components/AppShell'
 
 export default function ApiKeysPage() {
   const [apiKey, setApiKey] = useState('')
@@ -25,17 +25,8 @@ export default function ApiKeysPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#0A0F1A] text-[#E8ECF3]">
-      <nav className="border-b border-[#1F2A44] px-6 py-4 flex items-center gap-4">
-        <Link href="/" className="font-mono text-[#E25822] font-bold">boleto.eth</Link>
-        <span className="text-[#8B95AB]">/</span>
-        <span className="text-[#E8ECF3]">API Keys</span>
-        <div className="ml-auto">
-          <ConnectButton />
-        </div>
-      </nav>
-
-      <div className="max-w-2xl mx-auto px-6 py-12 space-y-8">
+    <AppShell active="api-keys">
+      <div className="max-w-3xl mx-auto px-8 py-10 space-y-8">
         <h1 className="font-mono text-2xl font-bold">API Keys</h1>
 
         <div className="bg-[#131C30] border border-[#1F2A44] rounded-xl p-6 space-y-4">
@@ -96,6 +87,6 @@ export default function ApiKeysPage() {
           </div>
         </div>
       </div>
-    </main>
+    </AppShell>
   )
 }

@@ -5,7 +5,7 @@ import { useAccount, useWriteContract, useChainId } from 'wagmi'
 import { parseUnits } from 'viem'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ConnectButton } from '@/components/ConnectButton'
+import { AppShell } from '@/components/AppShell'
 import { CsvUploader, type CsvRow } from '@/components/CsvUploader'
 import { PricingCalculator } from '@/components/PricingCalculator'
 import NftTicketCard from '@/components/NftTicketCard'
@@ -162,15 +162,8 @@ export default function CreateEventPage() {
   if (!isConnected) return null
 
   return (
-    <main className="min-h-screen bg-[#0A0F1A] text-[#E8ECF3]">
-      <nav className="border-b border-[#1F2A44] px-6 py-4 flex items-center gap-4">
-        <Link href="/" className="font-mono text-[#E25822] font-bold">boleto.eth</Link>
-        <span className="text-[#8B95AB]">/</span>
-        <span className="text-[#E8ECF3]">Create Event</span>
-        <div className="ml-auto"><ConnectButton /></div>
-      </nav>
-
-      <div className="max-w-5xl mx-auto px-6 py-12">
+    <AppShell active="create-event">
+      <div className="max-w-5xl mx-auto px-8 py-10">
 
         {/* ── STEP 1: FORM ── */}
         {step === 'form' && (
@@ -475,6 +468,6 @@ export default function CreateEventPage() {
           </div>
         )}
       </div>
-    </main>
+    </AppShell>
   )
 }

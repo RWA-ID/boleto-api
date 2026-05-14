@@ -8,6 +8,7 @@ import { CredentialTicket } from '@/components/CredentialTicket'
 import { MarketingNav } from '@/components/MarketingNav'
 import { MarketingFooter } from '@/components/MarketingFooter'
 import { ContactForm } from '@/components/ContactForm'
+import { CTAButton } from '@/components/CTAButton'
 
 // ────────────────────────────────────────────────
 // Section helpers
@@ -439,9 +440,9 @@ function ForOrganizers() {
                 </div>
               ))}
             </div>
-            <Link href="/events" className="btn btn-secondary" style={{ marginTop: 36 }}>
-              Open the operator console <Icon name="arrow" size={15} />
-            </Link>
+            <CTAButton href="/events" variant="secondary" size="md" style={{ marginTop: 36 }} connectLabel="Connect wallet to open console" showArrow>
+              Open the operator console
+            </CTAButton>
           </div>
         </div>
       </div>
@@ -566,9 +567,21 @@ function Pricing() {
                   </li>
                 ))}
               </ul>
-              <Link href={t.ctaHref} className={`btn btn-${t.ctaStyle}`} style={{ width: '100%' }}>
-                {t.cta}
-              </Link>
+              {t.name === 'Enterprise' ? (
+                <Link href={t.ctaHref} className={`btn btn-${t.ctaStyle}`} style={{ width: '100%' }}>
+                  {t.cta}
+                </Link>
+              ) : (
+                <CTAButton
+                  href={t.ctaHref}
+                  variant={t.ctaStyle}
+                  size="md"
+                  style={{ width: '100%' }}
+                  connectLabel="Connect wallet to start"
+                >
+                  {t.cta}
+                </CTAButton>
+              )}
             </div>
           ))}
         </div>
@@ -680,9 +693,9 @@ function FinalCTA() {
             A 30-minute call with our team. We&apos;ll scope the integration, run the cost model, and send a key the same day.
           </p>
           <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginTop: 36, flexWrap: 'wrap' }}>
-            <Link href="/create-event" className="btn btn-primary btn-lg">
-              Get Started <Icon name="arrow" size={15} />
-            </Link>
+            <CTAButton href="/create-event" variant="primary" size="lg" connectLabel="Connect wallet to start" showArrow>
+              Get Started
+            </CTAButton>
             <Link href="/docs" className="btn btn-ghost btn-lg">
               Read the docs
             </Link>
