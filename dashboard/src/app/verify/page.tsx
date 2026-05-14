@@ -93,8 +93,8 @@ function VerifyContent() {
   if (status === 'loading') {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
-        <div className="w-16 h-16 rounded-full border-4 border-[#f97316] border-t-transparent animate-spin" />
-        <p className="text-[#666] font-mono">Verifying ticket…</p>
+        <div className="w-16 h-16 rounded-full border-4 border-[#E25822] border-t-transparent animate-spin" />
+        <p className="text-[#8B95AB] font-mono">Verifying ticket…</p>
       </div>
     )
   }
@@ -104,7 +104,7 @@ function VerifyContent() {
       <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
         <div className="text-6xl">⚠️</div>
         <p className="text-red-400 font-mono">Could not reach verification server</p>
-        <p className="text-[#555] text-sm">Try again in a moment</p>
+        <p className="text-[#5E6A85] text-sm">Try again in a moment</p>
       </div>
     )
   }
@@ -117,10 +117,10 @@ function VerifyContent() {
         </div>
         <div>
           <h2 className="text-2xl font-mono font-bold text-red-400">Invalid Ticket</h2>
-          <p className="text-[#666] mt-2 text-sm">This ticket has not been minted or does not exist</p>
+          <p className="text-[#8B95AB] mt-2 text-sm">This ticket has not been minted or does not exist</p>
         </div>
-        {ensName && <p className="font-mono text-xs text-[#444]">{ensName}</p>}
-        {seatNum  && <p className="font-mono text-xs text-[#444]">Seat: {seatNum}</p>}
+        {ensName && <p className="font-mono text-xs text-[#5E6A85]">{ensName}</p>}
+        {seatNum  && <p className="font-mono text-xs text-[#5E6A85]">Seat: {seatNum}</p>}
       </div>
     )
   }
@@ -133,20 +133,20 @@ function VerifyContent() {
         </div>
         <div>
           <h2 className="text-2xl font-mono font-bold text-yellow-400">Already Redeemed</h2>
-          <p className="text-[#666] mt-1 text-sm">This ticket was already scanned at the door</p>
+          <p className="text-[#8B95AB] mt-1 text-sm">This ticket was already scanned at the door</p>
         </div>
-        <div className="w-full bg-[#161616] border border-[#1f1f1f] rounded-xl p-5 space-y-3 text-left">
+        <div className="w-full bg-[#131C30] border border-[#1F2A44] rounded-xl p-5 space-y-3 text-left">
           <div className="flex justify-between">
-            <span className="text-[#666] text-sm">Event</span>
-            <span className="text-[#f0f0f0] text-sm font-medium">{event?.eventName}</span>
+            <span className="text-[#8B95AB] text-sm">Event</span>
+            <span className="text-[#E8ECF3] text-sm font-medium">{event?.eventName}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-[#666] text-sm">Seat</span>
-            <span className="text-[#f0f0f0] text-sm font-mono font-bold">{seatNum}</span>
+            <span className="text-[#8B95AB] text-sm">Seat</span>
+            <span className="text-[#E8ECF3] text-sm font-mono font-bold">{seatNum}</span>
           </div>
           {ticket?.redeemedAt && (
             <div className="flex justify-between">
-              <span className="text-[#666] text-sm">Redeemed at</span>
+              <span className="text-[#8B95AB] text-sm">Redeemed at</span>
               <span className="text-yellow-400 text-sm font-mono">{new Date(ticket.redeemedAt).toLocaleTimeString()}</span>
             </div>
           )}
@@ -164,29 +164,29 @@ function VerifyContent() {
 
       <div>
         <h2 className="text-2xl font-mono font-bold text-[#22c55e]">Valid Ticket</h2>
-        <p className="text-[#666] mt-1 text-sm">Verified on Ethereum</p>
+        <p className="text-[#8B95AB] mt-1 text-sm">Verified on Ethereum</p>
       </div>
 
-      <div className="w-full bg-[#161616] border border-[#1f1f1f] rounded-xl p-5 space-y-3 text-left">
+      <div className="w-full bg-[#131C30] border border-[#1F2A44] rounded-xl p-5 space-y-3 text-left">
         <div className="flex justify-between">
-          <span className="text-[#666] text-sm">Event</span>
-          <span className="text-[#f0f0f0] text-sm font-medium">{event?.eventName}</span>
+          <span className="text-[#8B95AB] text-sm">Event</span>
+          <span className="text-[#E8ECF3] text-sm font-medium">{event?.eventName}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-[#666] text-sm">ENS</span>
-          <span className="text-[#f97316] text-sm font-mono">{ensName}</span>
+          <span className="text-[#8B95AB] text-sm">ENS</span>
+          <span className="text-[#E25822] text-sm font-mono">{ensName}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-[#666] text-sm">Seat</span>
-          <span className="text-[#f0f0f0] text-sm font-mono font-bold">{seatNum}</span>
+          <span className="text-[#8B95AB] text-sm">Seat</span>
+          <span className="text-[#E8ECF3] text-sm font-mono font-bold">{seatNum}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-[#666] text-sm">Token ID</span>
-          <span className="text-[#f0f0f0] text-sm font-mono">#{ticket?.tokenId}</span>
+          <span className="text-[#8B95AB] text-sm">Token ID</span>
+          <span className="text-[#E8ECF3] text-sm font-mono">#{ticket?.tokenId}</span>
         </div>
         <div className="flex justify-between items-start gap-4">
-          <span className="text-[#666] text-sm flex-shrink-0">Owner</span>
-          <span className="text-[#f0f0f0] text-xs font-mono break-all">{ticket?.ownerWallet}</span>
+          <span className="text-[#8B95AB] text-sm flex-shrink-0">Owner</span>
+          <span className="text-[#E8ECF3] text-xs font-mono break-all">{ticket?.ownerWallet}</span>
         </div>
       </div>
 
@@ -204,7 +204,7 @@ function VerifyContent() {
             {redeemErr && <p className="text-red-400 text-xs font-mono text-center">{redeemErr}</p>}
             <button
               onClick={handleClearKey}
-              className="w-full text-xs text-[#444] hover:text-[#666] font-mono py-1 transition-colors"
+              className="w-full text-xs text-[#5E6A85] hover:text-[#8B95AB] font-mono py-1 transition-colors"
             >
               Clear API key
             </button>
@@ -218,19 +218,19 @@ function VerifyContent() {
               onKeyDown={e => e.key === 'Enter' && handleSaveKey()}
               placeholder="Enter promoter API key…"
               autoFocus
-              className="w-full bg-[#161616] border border-[#2f2f2f] rounded-lg px-4 py-3 text-[#f0f0f0] font-mono text-sm placeholder-[#444] focus:outline-none focus:border-[#f97316]"
+              className="w-full bg-[#131C30] border border-[#1F2A44] rounded-lg px-4 py-3 text-[#E8ECF3] font-mono text-sm placeholder-[#5E6A85] focus:outline-none focus:border-[#E25822]"
             />
             <div className="flex gap-2">
               <button
                 onClick={handleSaveKey}
                 disabled={!keyInput.trim()}
-                className="flex-1 bg-[#f97316] text-black font-mono font-bold py-3 rounded-lg hover:bg-[#ea6c0a] transition-colors disabled:opacity-40"
+                className="flex-1 bg-[#E25822] text-black font-mono font-bold py-3 rounded-lg hover:bg-[#C24A1E] transition-colors disabled:opacity-40"
               >
                 Save & Redeem
               </button>
               <button
                 onClick={() => { setKeyPanelOpen(false); setKeyInput('') }}
-                className="px-4 py-3 bg-[#1a1a1a] border border-[#2f2f2f] rounded-lg font-mono text-sm text-[#666] hover:text-[#f0f0f0] transition-colors"
+                className="px-4 py-3 bg-[#131C30] border border-[#1F2A44] rounded-lg font-mono text-sm text-[#8B95AB] hover:text-[#E8ECF3] transition-colors"
               >
                 Cancel
               </button>
@@ -239,7 +239,7 @@ function VerifyContent() {
         ) : (
           <button
             onClick={() => setKeyPanelOpen(true)}
-            className="w-full border border-[#2f2f2f] text-[#666] font-mono py-3 rounded-lg hover:border-[#f97316] hover:text-[#f97316] transition-colors text-sm"
+            className="w-full border border-[#1F2A44] text-[#8B95AB] font-mono py-3 rounded-lg hover:border-[#E25822] hover:text-[#E25822] transition-colors text-sm"
           >
             Promoter? Enter API key to redeem →
           </button>
@@ -250,7 +250,7 @@ function VerifyContent() {
         <a
           href={`https://opensea.io/assets/ethereum/0x9650d442779368e0A039351eD7c75c3E93de372D/${ticket.tokenId}`}
           target="_blank" rel="noopener noreferrer"
-          className="text-xs text-[#f97316] font-mono hover:underline"
+          className="text-xs text-[#E25822] font-mono hover:underline"
         >
           View on OpenSea →
         </a>
@@ -261,14 +261,14 @@ function VerifyContent() {
 
 export default function VerifyPage() {
   return (
-    <main className="min-h-screen bg-[#0a0a0a] text-[#f0f0f0]">
-      <nav className="border-b border-[#1f1f1f] px-6 py-4 flex items-center gap-4">
-        <Link href="/" className="font-mono text-[#f97316] font-bold">boleto.eth</Link>
-        <span className="text-[#666]">/</span>
-        <span className="text-[#f0f0f0]">Verify Ticket</span>
+    <main className="min-h-screen bg-[#0A0F1A] text-[#E8ECF3]">
+      <nav className="border-b border-[#1F2A44] px-6 py-4 flex items-center gap-4">
+        <Link href="/" className="font-mono text-[#E25822] font-bold">boleto.eth</Link>
+        <span className="text-[#8B95AB]">/</span>
+        <span className="text-[#E8ECF3]">Verify Ticket</span>
       </nav>
       <div className="max-w-lg mx-auto px-6 py-12">
-        <Suspense fallback={<div className="text-center py-20 text-[#666] font-mono animate-pulse">Loading…</div>}>
+        <Suspense fallback={<div className="text-center py-20 text-[#8B95AB] font-mono animate-pulse">Loading…</div>}>
           <VerifyContent />
         </Suspense>
       </div>

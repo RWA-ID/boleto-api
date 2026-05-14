@@ -62,24 +62,24 @@ export function ImageUploader({ value, onChange, onLocalPreview }: Props) {
         onClick={() => inputRef.current?.click()}
         onDrop={onDrop}
         onDragOver={(e) => e.preventDefault()}
-        className="relative w-full h-36 bg-[#111] border-2 border-dashed border-[#1f1f1f] rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-[#f97316]/50 transition-colors overflow-hidden"
+        className="relative w-full h-36 bg-[#0F1626] border-2 border-dashed border-[#1F2A44] rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-[#E25822]/50 transition-colors overflow-hidden"
       >
         {displayPreview ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={displayPreview} alt="Event" className="w-full h-full object-cover" />
         ) : (
           <>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#444" strokeWidth="1.5" className="mb-2">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#5E6A85" strokeWidth="1.5" className="mb-2">
               <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
               <polyline points="21 15 16 10 5 21"/>
             </svg>
-            <p className="text-xs text-[#444]">Click or drag & drop event image</p>
-            <p className="text-xs text-[#333] mt-1">JPEG or PNG · max 10 MB</p>
+            <p className="text-xs text-[#5E6A85]">Click or drag & drop event image</p>
+            <p className="text-xs text-[#2B395C] mt-1">JPEG or PNG · max 10 MB</p>
           </>
         )}
         {uploading && (
-          <div className="absolute inset-0 bg-[#0a0a0a]/80 flex items-center justify-center">
-            <div className="w-6 h-6 border-2 border-[#f97316] border-t-transparent rounded-full animate-spin"/>
+          <div className="absolute inset-0 bg-[#0A0F1A]/80 flex items-center justify-center">
+            <div className="w-6 h-6 border-2 border-[#E25822] border-t-transparent rounded-full animate-spin"/>
           </div>
         )}
         <input ref={inputRef} type="file" accept="image/*" onChange={onInputChange} className="hidden" />
@@ -94,7 +94,7 @@ export function ImageUploader({ value, onChange, onLocalPreview }: Props) {
         <button
           type="button"
           onClick={() => { onChange(''); setPreview(null); setError(null); onLocalPreview?.(null) }}
-          className="text-xs text-[#666] hover:text-[#ef4444] transition-colors"
+          className="text-xs text-[#8B95AB] hover:text-[#ef4444] transition-colors"
         >
           Remove image
         </button>

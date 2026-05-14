@@ -25,74 +25,41 @@ export function ContactForm() {
     setSubmitting(false)
   }
 
+  const labelCls = 'block text-[12px] font-semibold uppercase tracking-[0.12em] mb-2'
+  const labelStyle = { color: 'var(--ink-500)' }
+
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
         <div>
-          <label className="block text-xs font-bold text-[#666] uppercase tracking-widest mb-2">
-            {t.contact.name}
-          </label>
-          <input
-            type="text"
-            name="name"
-            required
-            placeholder={t.contact.namePlaceholder}
-            className="w-full bg-[#111] border border-[#1f1f1f] rounded px-4 py-3 font-mono text-[#f0f0f0] text-sm focus:outline-none focus:border-[#f97316] transition-colors placeholder-[#444]"
-          />
+          <label className={labelCls} style={labelStyle}>{t.contact.name}</label>
+          <input type="text" name="name" required placeholder={t.contact.namePlaceholder} className="input" />
         </div>
         <div>
-          <label className="block text-xs font-bold text-[#666] uppercase tracking-widest mb-2">
-            {t.contact.email}
-          </label>
-          <input
-            type="email"
-            name="email"
-            required
-            placeholder={t.contact.emailPlaceholder}
-            className="w-full bg-[#111] border border-[#1f1f1f] rounded px-4 py-3 font-mono text-[#f0f0f0] text-sm focus:outline-none focus:border-[#f97316] transition-colors placeholder-[#444]"
-          />
+          <label className={labelCls} style={labelStyle}>{t.contact.email}</label>
+          <input type="email" name="email" required placeholder={t.contact.emailPlaceholder} className="input" />
         </div>
       </div>
       <div>
-        <label className="block text-xs font-bold text-[#666] uppercase tracking-widest mb-2">
-          {t.contact.subject}
-        </label>
-        <input
-          type="text"
-          name="subject"
-          required
-          placeholder={t.contact.subjectPlaceholder}
-          className="w-full bg-[#111] border border-[#1f1f1f] rounded px-4 py-3 font-mono text-[#f0f0f0] text-sm focus:outline-none focus:border-[#f97316] transition-colors placeholder-[#444]"
-        />
+        <label className={labelCls} style={labelStyle}>{t.contact.subject}</label>
+        <input type="text" name="subject" required placeholder={t.contact.subjectPlaceholder} className="input" />
       </div>
       <div>
-        <label className="block text-xs font-bold text-[#666] uppercase tracking-widest mb-2">
-          {t.contact.message}
-        </label>
-        <textarea
-          name="message"
-          required
-          rows={5}
-          placeholder={t.contact.messagePlaceholder}
-          className="w-full bg-[#111] border border-[#1f1f1f] rounded px-4 py-3 font-mono text-[#f0f0f0] text-sm focus:outline-none focus:border-[#f97316] transition-colors placeholder-[#444] resize-none"
-        />
+        <label className={labelCls} style={labelStyle}>{t.contact.message}</label>
+        <textarea name="message" required rows={5} placeholder={t.contact.messagePlaceholder} className="textarea" style={{ resize: 'none' }} />
       </div>
-      <div className="flex items-center gap-4">
-        <button
-          type="submit"
-          disabled={submitting}
-          className="bg-[#f97316] text-white font-mono font-bold px-8 py-3 rounded hover:bg-[#fb923c] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+        <button type="submit" disabled={submitting} className="btn btn-primary" style={{ opacity: submitting ? 0.6 : 1 }}>
           {submitting ? t.contact.sending : t.contact.submit}
         </button>
         {result === 'success' && (
-          <span className="text-[#22c55e] text-sm font-mono flex items-center gap-2">
+          <span style={{ color: 'var(--success-600)', fontSize: 14, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="3 8 6.5 11.5 13 5"/></svg>
             {t.contact.success}
           </span>
         )}
         {result === 'error' && (
-          <span className="text-[#ef4444] text-sm font-mono">{t.contact.error}</span>
+          <span style={{ color: 'var(--danger-500)', fontSize: 14 }}>{t.contact.error}</span>
         )}
       </div>
     </form>

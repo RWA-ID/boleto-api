@@ -65,17 +65,17 @@ export function CsvUploader({ onParsed }: Props) {
         onClick={() => inputRef.current?.click()}
         className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors ${
           dragging
-            ? 'border-[#f97316] bg-[#f97316]/5'
-            : 'border-[#333] hover:border-[#f97316]/50 bg-[#111]'
+            ? 'border-[#E25822] bg-[#E25822]/5'
+            : 'border-[#2B395C] hover:border-[#E25822]/50 bg-[#0F1626]'
         }`}
       >
         <input ref={inputRef} type="file" accept=".csv" className="hidden" onChange={onFileChange} />
-        <p className="text-[#666] text-sm font-mono">
-          Drop your CSV here or <span className="text-[#f97316] underline">click to upload</span>
+        <p className="text-[#8B95AB] text-sm font-mono">
+          Drop your CSV here or <span className="text-[#E25822] underline">click to upload</span>
         </p>
-        <p className="text-[#444] text-xs mt-2">
-          Required column: <code className="text-[#f97316]">seat_number</code>
-          {"  "}Optional: <code className="text-[#555]">price_usdc</code>, any other columns become NFT attributes
+        <p className="text-[#5E6A85] text-xs mt-2">
+          Required column: <code className="text-[#E25822]">seat_number</code>
+          {"  "}Optional: <code className="text-[#5E6A85]">price_usdc</code>, any other columns become NFT attributes
         </p>
       </div>
 
@@ -87,9 +87,9 @@ export function CsvUploader({ onParsed }: Props) {
       )}
 
       {/* CSV format example */}
-      <div className="mt-3 bg-[#0a0a0a] border border-[#1a1a1a] rounded-lg p-3">
-        <p className="text-[#444] text-xs mb-1 font-mono">Example CSV format:</p>
-        <pre className="text-[#555] text-xs font-mono overflow-x-auto">{`seat_number,price_usdc,section,row,gate
+      <div className="mt-3 bg-[#0A0F1A] border border-[#131C30] rounded-lg p-3">
+        <p className="text-[#5E6A85] text-xs mb-1 font-mono">Example CSV format:</p>
+        <pre className="text-[#5E6A85] text-xs font-mono overflow-x-auto">{`seat_number,price_usdc,section,row,gate
 A101,150.00,Floor,A,1
 A102,150.00,Floor,A,1
 B201,95.00,Lower Bowl,B,2`}</pre>

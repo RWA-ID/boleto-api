@@ -15,8 +15,8 @@ function Row({ label, value, orange, mono, small }: {
 }) {
   return (
     <div className="flex justify-between items-start gap-4">
-      <span className="text-[#666] text-sm flex-shrink-0">{label}</span>
-      <span className={`text-right break-all ${orange ? 'text-[#f97316]' : 'text-[#f0f0f0]'} ${mono ? 'font-mono' : ''} ${small ? 'text-xs' : 'text-sm'}`}>
+      <span className="text-[#8B95AB] text-sm flex-shrink-0">{label}</span>
+      <span className={`text-right break-all ${orange ? 'text-[#E25822]' : 'text-[#E8ECF3]'} ${mono ? 'font-mono' : ''} ${small ? 'text-xs' : 'text-sm'}`}>
         {value}
       </span>
     </div>
@@ -38,41 +38,41 @@ function InventoryTable({ tickets }: { tickets: any[] }) {
         {(['all', 'available', 'minted'] as const).map((f) => (
           <button key={f} onClick={() => setFilter(f)}
             className={`px-3 py-1 rounded-full text-xs font-mono font-bold transition-colors ${
-              filter === f ? 'bg-[#f97316] text-white' : 'bg-[#1f1f1f] text-[#666] hover:text-[#f0f0f0]'
+              filter === f ? 'bg-[#E25822] text-white' : 'bg-[#1F2A44] text-[#8B95AB] hover:text-[#E8ECF3]'
             }`}>
             {f} ({f === 'all' ? tickets.length : f === 'available' ? tickets.filter(t => !t.minted).length : tickets.filter(t => t.minted).length})
           </button>
         ))}
       </div>
-      <div className="overflow-x-auto rounded-lg border border-[#1f1f1f]">
+      <div className="overflow-x-auto rounded-lg border border-[#1F2A44]">
         <table className="w-full text-xs font-mono">
           <thead>
-            <tr className="border-b border-[#1f1f1f] bg-[#111]">
-              <th className="text-left px-3 py-2 text-[#555] font-normal">Seat</th>
-              <th className="text-left px-3 py-2 text-[#555] font-normal">Price</th>
-              <th className="text-left px-3 py-2 text-[#555] font-normal">Status</th>
-              <th className="text-left px-3 py-2 text-[#555] font-normal">Token ID</th>
-              <th className="text-left px-3 py-2 text-[#555] font-normal">Owner</th>
+            <tr className="border-b border-[#1F2A44] bg-[#0F1626]">
+              <th className="text-left px-3 py-2 text-[#5E6A85] font-normal">Seat</th>
+              <th className="text-left px-3 py-2 text-[#5E6A85] font-normal">Price</th>
+              <th className="text-left px-3 py-2 text-[#5E6A85] font-normal">Status</th>
+              <th className="text-left px-3 py-2 text-[#5E6A85] font-normal">Token ID</th>
+              <th className="text-left px-3 py-2 text-[#5E6A85] font-normal">Owner</th>
             </tr>
           </thead>
           <tbody>
             {filtered.slice(0, 200).map((t: any) => (
-              <tr key={t.id} className="border-b border-[#161616] hover:bg-[#161616]">
-                <td className="px-3 py-2 text-[#f0f0f0]">{t.seatNumber}</td>
-                <td className="px-3 py-2 text-[#f0f0f0]">${t.priceUsdc}</td>
+              <tr key={t.id} className="border-b border-[#131C30] hover:bg-[#131C30]">
+                <td className="px-3 py-2 text-[#E8ECF3]">{t.seatNumber}</td>
+                <td className="px-3 py-2 text-[#E8ECF3]">${t.priceUsdc}</td>
                 <td className="px-3 py-2">
                   <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
-                    t.minted ? 'bg-[#22c55e]/20 text-[#22c55e]' : 'bg-[#f97316]/10 text-[#f97316]'
+                    t.minted ? 'bg-[#22c55e]/20 text-[#22c55e]' : 'bg-[#E25822]/10 text-[#E25822]'
                   }`}>{t.minted ? 'minted' : 'available'}</span>
                 </td>
-                <td className="px-3 py-2 text-[#666]">{t.tokenId || '—'}</td>
-                <td className="px-3 py-2 text-[#555]">{t.ownerWallet ? `${t.ownerWallet.slice(0,6)}…${t.ownerWallet.slice(-4)}` : '—'}</td>
+                <td className="px-3 py-2 text-[#8B95AB]">{t.tokenId || '—'}</td>
+                <td className="px-3 py-2 text-[#5E6A85]">{t.ownerWallet ? `${t.ownerWallet.slice(0,6)}…${t.ownerWallet.slice(-4)}` : '—'}</td>
               </tr>
             ))}
           </tbody>
         </table>
         {filtered.length > 200 && (
-          <p className="text-center text-[#444] text-xs py-2 font-mono">Showing first 200 of {filtered.length}</p>
+          <p className="text-center text-[#5E6A85] text-xs py-2 font-mono">Showing first 200 of {filtered.length}</p>
         )}
       </div>
     </div>
@@ -103,33 +103,33 @@ function BrandingEditor({ apiKey, initial }: { apiKey: string; initial: { promot
   }
 
   return (
-    <div className="bg-[#161616] border border-[#1f1f1f] rounded-xl p-6 space-y-4">
-      <h2 className="font-mono font-bold text-xs text-[#666] uppercase tracking-wider">Branding</h2>
+    <div className="bg-[#131C30] border border-[#1F2A44] rounded-xl p-6 space-y-4">
+      <h2 className="font-mono font-bold text-xs text-[#8B95AB] uppercase tracking-wider">Branding</h2>
       <div className="space-y-3">
         <div>
-          <label className="block text-xs text-[#666] mb-1">Company / Promoter Name</label>
+          <label className="block text-xs text-[#8B95AB] mb-1">Company / Promoter Name</label>
           <input
             value={promoterName}
             onChange={(e) => setPromoterName(e.target.value)}
             placeholder="e.g. Live Nation Latin America"
-            className="w-full bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg px-3 py-2 text-sm text-[#f0f0f0] placeholder-[#444] focus:outline-none focus:border-[#f97316]"
+            className="w-full bg-[#0A0F1A] border border-[#1F2A44] rounded-lg px-3 py-2 text-sm text-[#E8ECF3] placeholder-[#5E6A85] focus:outline-none focus:border-[#E25822]"
           />
         </div>
         <div>
-          <label className="block text-xs text-[#666] mb-1">Banner Image URL</label>
+          <label className="block text-xs text-[#8B95AB] mb-1">Banner Image URL</label>
           <input
             value={bannerUri}
             onChange={(e) => setBannerUri(e.target.value)}
             placeholder="https://... or ipfs://..."
-            className="w-full bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg px-3 py-2 text-sm text-[#f0f0f0] placeholder-[#444] focus:outline-none focus:border-[#f97316]"
+            className="w-full bg-[#0A0F1A] border border-[#1F2A44] rounded-lg px-3 py-2 text-sm text-[#E8ECF3] placeholder-[#5E6A85] focus:outline-none focus:border-[#E25822]"
           />
         </div>
         {bannerUri && (
           <img src={bannerUri.startsWith('ipfs://') ? bannerUri.replace('ipfs://', 'https://ipfs.io/ipfs/') : bannerUri}
-            alt="Banner preview" className="w-full h-24 object-cover rounded-lg border border-[#2a2a2a]" />
+            alt="Banner preview" className="w-full h-24 object-cover rounded-lg border border-[#1F2A44]" />
         )}
         <button onClick={save} disabled={saving}
-          className="px-4 py-2 bg-[#f97316] text-white rounded-lg text-sm font-mono font-bold disabled:opacity-50 hover:bg-[#ea6c0a] transition-colors">
+          className="px-4 py-2 bg-[#E25822] text-white rounded-lg text-sm font-mono font-bold disabled:opacity-50 hover:bg-[#C24A1E] transition-colors">
           {saving ? 'Saving…' : saved ? 'Saved ✓' : 'Save Branding'}
         </button>
       </div>
@@ -189,24 +189,24 @@ function PendingPaymentPanel({ event, onActivated }: { event: any; onActivated: 
   }
 
   return (
-    <div className="bg-[#1a0a00] border-2 border-[#f97316]/50 rounded-xl p-6 space-y-4">
+    <div className="bg-[#1a0a00] border-2 border-[#E25822]/50 rounded-xl p-6 space-y-4">
       <div className="flex items-center gap-2">
-        <span className="w-2 h-2 rounded-full bg-[#f97316] animate-pulse" />
-        <h2 className="font-mono font-bold text-[#f97316]">Payment Required to Activate</h2>
+        <span className="w-2 h-2 rounded-full bg-[#E25822] animate-pulse" />
+        <h2 className="font-mono font-bold text-[#E25822]">Payment Required to Activate</h2>
       </div>
 
-      <div className="bg-[#111] rounded-lg p-4 space-y-2">
+      <div className="bg-[#0F1626] rounded-lg p-4 space-y-2">
         <div className="flex justify-between text-sm">
-          <span className="text-[#666]">Amount Due</span>
-          <span className="font-mono font-bold text-[#f97316] text-lg">${event.feePaidUsdc} USDC</span>
+          <span className="text-[#8B95AB]">Amount Due</span>
+          <span className="font-mono font-bold text-[#E25822] text-lg">${event.feePaidUsdc} USDC</span>
         </div>
         <div className="flex justify-between text-sm">
-          <span className="text-[#666]">Invoice ID</span>
-          <span className="font-mono text-xs text-[#555]">{event.invoiceId}</span>
+          <span className="text-[#8B95AB]">Invoice ID</span>
+          <span className="font-mono text-xs text-[#5E6A85]">{event.invoiceId}</span>
         </div>
         <div className="pt-1">
-          <p className="text-xs text-[#555]">Send USDC on Ethereum to</p>
-          <p className="font-mono text-xs text-[#f0f0f0] break-all">{event.paymentAddress}</p>
+          <p className="text-xs text-[#5E6A85]">Send USDC on Ethereum to</p>
+          <p className="font-mono text-xs text-[#E8ECF3] break-all">{event.paymentAddress}</p>
         </div>
       </div>
 
@@ -214,15 +214,15 @@ function PendingPaymentPanel({ event, onActivated }: { event: any; onActivated: 
         <button
           onClick={handlePay}
           disabled={paying || isPaying}
-          className="w-full bg-[#f97316] text-white font-mono font-bold py-3 rounded-lg hover:bg-[#fb923c] transition-colors disabled:opacity-50"
+          className="w-full bg-[#E25822] text-white font-mono font-bold py-3 rounded-lg hover:bg-[#ED7144] transition-colors disabled:opacity-50"
         >
           {(paying || isPaying) ? 'Approve in Wallet…' : `Pay $${event.feePaidUsdc} USDC`}
         </button>
       ) : (
         <div className="space-y-3">
-          <div className="bg-[#111] border border-[#22c55e]/30 rounded-lg p-3">
+          <div className="bg-[#0F1626] border border-[#22c55e]/30 rounded-lg p-3">
             <p className="text-xs text-[#22c55e] mb-1">Payment submitted</p>
-            <p className="font-mono text-xs text-[#666] break-all">{payTxHash}</p>
+            <p className="font-mono text-xs text-[#8B95AB] break-all">{payTxHash}</p>
           </div>
           <button
             onClick={() => handleConfirm(payTxHash)}
@@ -240,7 +240,7 @@ function PendingPaymentPanel({ event, onActivated }: { event: any; onActivated: 
       <button
         type="button"
         onClick={() => setShowManual((v) => !v)}
-        className="text-xs text-[#555] hover:text-[#666] underline w-full text-center"
+        className="text-xs text-[#5E6A85] hover:text-[#8B95AB] underline w-full text-center"
       >
         {showManual ? 'Hide manual entry' : 'Already sent manually? Enter tx hash'}
       </button>
@@ -250,12 +250,12 @@ function PendingPaymentPanel({ event, onActivated }: { event: any; onActivated: 
             type="text" placeholder="0x... transaction hash"
             value={manualHash}
             onChange={(e) => setManualHash(e.target.value)}
-            className="w-full bg-[#111] border border-[#1f1f1f] rounded px-3 py-2 font-mono text-[#f0f0f0] focus:outline-none focus:border-[#f97316] text-sm"
+            className="w-full bg-[#0F1626] border border-[#1F2A44] rounded px-3 py-2 font-mono text-[#E8ECF3] focus:outline-none focus:border-[#E25822] text-sm"
           />
           <button
             onClick={() => handleConfirm(manualHash)}
             disabled={confirming || !manualHash || manualHash.length !== 66}
-            className="w-full bg-[#333] text-white font-mono font-bold py-2 rounded-lg hover:bg-[#444] transition-colors disabled:opacity-50 text-sm"
+            className="w-full bg-[#2B395C] text-white font-mono font-bold py-2 rounded-lg hover:bg-[#5E6A85] transition-colors disabled:opacity-50 text-sm"
           >
             {confirming ? 'Confirming…' : 'Confirm Manual Payment'}
           </button>
@@ -290,7 +290,7 @@ function EventDashboard({ eventId, apiKey }: { eventId: string; apiKey?: string 
       .catch((e) => { setError(e.message); setLoading(false) })
   }, [eventId, apiKey])
 
-  if (loading) return <div className="text-center py-20 text-[#666] font-mono animate-pulse">Loading event…</div>
+  if (loading) return <div className="text-center py-20 text-[#8B95AB] font-mono animate-pulse">Loading event…</div>
   if (error || !event || event.error) return (
     <div className="text-center py-20 text-red-400 font-mono">{error || event?.message || 'Event not found'}</div>
   )
@@ -302,7 +302,7 @@ function EventDashboard({ eventId, apiKey }: { eventId: string; apiKey?: string 
     <div className="space-y-6">
       {/* Banner */}
       {bannerUri && (
-        <div className="rounded-xl overflow-hidden border border-[#1f1f1f] h-36">
+        <div className="rounded-xl overflow-hidden border border-[#1F2A44] h-36">
           <img src={bannerUri.startsWith('ipfs://') ? bannerUri.replace('ipfs://', 'https://ipfs.io/ipfs/') : bannerUri}
             alt="Event banner" className="w-full h-full object-cover" />
         </div>
@@ -310,11 +310,11 @@ function EventDashboard({ eventId, apiKey }: { eventId: string; apiKey?: string 
 
       <div className="flex items-start justify-between gap-4">
         <div>
-          {promoterName && <p className="text-xs text-[#f97316] font-mono mb-1">{promoterName}</p>}
+          {promoterName && <p className="text-xs text-[#E25822] font-mono mb-1">{promoterName}</p>}
           <h1 className="font-mono text-2xl font-bold">{event.eventName}</h1>
         </div>
         <span className={`px-3 py-1 rounded-full text-xs font-mono font-bold flex-shrink-0 ${
-          (activated?.status ?? event.status) === 'active' ? 'bg-[#22c55e]/20 text-[#22c55e]' : 'bg-[#f97316]/20 text-[#f97316]'
+          (activated?.status ?? event.status) === 'active' ? 'bg-[#22c55e]/20 text-[#22c55e]' : 'bg-[#E25822]/20 text-[#E25822]'
         }`}>{activated?.status ?? event.status}</span>
       </div>
 
@@ -329,8 +329,8 @@ function EventDashboard({ eventId, apiKey }: { eventId: string; apiKey?: string 
           <p className="font-mono font-bold text-[#22c55e]">Event activated!</p>
           {activated.apiKey && (
             <div className="space-y-1">
-              <p className="text-xs text-[#aaa]">Your API Key — save this now, it won&apos;t be shown again.</p>
-              <code className="block bg-[#111] border border-[#22c55e]/30 rounded px-3 py-2 font-mono text-sm text-[#22c55e] break-all">
+              <p className="text-xs text-[#9CA3AF]">Your API Key — save this now, it won&apos;t be shown again.</p>
+              <code className="block bg-[#0F1626] border border-[#22c55e]/30 rounded px-3 py-2 font-mono text-sm text-[#22c55e] break-all">
                 {activated.apiKey}
               </code>
             </div>
@@ -339,7 +339,7 @@ function EventDashboard({ eventId, apiKey }: { eventId: string; apiKey?: string 
       )}
 
       {/* Event Info */}
-      <div className="bg-[#161616] border border-[#1f1f1f] rounded-xl p-6 space-y-3">
+      <div className="bg-[#131C30] border border-[#1F2A44] rounded-xl p-6 space-y-3">
         <Row label="ENS Name"        value={event.ensName}            orange />
         <Row label="Event Date"      value={event.eventDate ? new Date(event.eventDate).toLocaleDateString() : '—'} />
         <Row label="Total Tickets"   value={event.totalTickets?.toLocaleString()} />
@@ -347,8 +347,8 @@ function EventDashboard({ eventId, apiKey }: { eventId: string; apiKey?: string 
       </div>
 
       {/* Contract Info */}
-      <div className="bg-[#161616] border border-[#1f1f1f] rounded-xl p-6 space-y-3">
-        <h2 className="font-mono font-bold text-xs text-[#666] uppercase tracking-wider">Contract</h2>
+      <div className="bg-[#131C30] border border-[#1F2A44] rounded-xl p-6 space-y-3">
+        <h2 className="font-mono font-bold text-xs text-[#8B95AB] uppercase tracking-wider">Contract</h2>
         <Row label="BoletoTickets (Ethereum)" value={inventory?.contractAddress || '—'} mono small />
         <Row label="On-Chain Event ID"        value={event.onChainEventId || '—'} mono small />
       </div>
@@ -357,13 +357,13 @@ function EventDashboard({ eventId, apiKey }: { eventId: string; apiKey?: string 
       {inventory && (
         <div className="grid grid-cols-3 gap-4">
           {[
-            { label: 'Total',     value: inventory.totalTickets, color: 'text-[#f0f0f0]', border: 'border-[#1f1f1f]' },
-            { label: 'Available', value: inventory.available,    color: 'text-[#f97316]', border: 'border-[#f97316]/20' },
+            { label: 'Total',     value: inventory.totalTickets, color: 'text-[#E8ECF3]', border: 'border-[#1F2A44]' },
+            { label: 'Available', value: inventory.available,    color: 'text-[#E25822]', border: 'border-[#E25822]/20' },
             { label: 'Minted',    value: inventory.minted,       color: 'text-[#22c55e]', border: 'border-[#22c55e]/20' },
           ].map(({ label, value, color, border }) => (
-            <div key={label} className={`bg-[#161616] border ${border} rounded-xl p-4 text-center`}>
+            <div key={label} className={`bg-[#131C30] border ${border} rounded-xl p-4 text-center`}>
               <p className={`text-2xl font-mono font-bold ${color}`}>{value?.toLocaleString()}</p>
-              <p className="text-xs text-[#666] mt-1">{label}</p>
+              <p className="text-xs text-[#8B95AB] mt-1">{label}</p>
             </div>
           ))}
         </div>
@@ -375,10 +375,10 @@ function EventDashboard({ eventId, apiKey }: { eventId: string; apiKey?: string 
       )}
 
       {/* API Integration */}
-      <div className="bg-[#161616] border border-[#1f1f1f] rounded-xl p-6 space-y-3">
-        <h2 className="font-mono font-bold text-xs text-[#666] uppercase tracking-wider">API Integration</h2>
-        <p className="text-xs text-[#555]">Use your API key to generate vouchers for buyers or mint directly.</p>
-        <pre className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-lg p-4 text-xs font-mono text-[#f0f0f0] overflow-x-auto whitespace-pre">{`// Generate signed voucher for buyer self-mint
+      <div className="bg-[#131C30] border border-[#1F2A44] rounded-xl p-6 space-y-3">
+        <h2 className="font-mono font-bold text-xs text-[#8B95AB] uppercase tracking-wider">API Integration</h2>
+        <p className="text-xs text-[#5E6A85]">Use your API key to generate vouchers for buyers or mint directly.</p>
+        <pre className="bg-[#0A0F1A] border border-[#131C30] rounded-lg p-4 text-xs font-mono text-[#E8ECF3] overflow-x-auto whitespace-pre">{`// Generate signed voucher for buyer self-mint
 POST ${API_BASE}/v1/events/${eventId}/voucher
 Authorization: Bearer YOUR_API_KEY
 { "seatNumber": "A-101", "buyerWallet": "0xBUYER" }
@@ -391,8 +391,8 @@ Authorization: Bearer YOUR_API_KEY
 
       {/* Inventory Table */}
       {inventory?.tickets?.length > 0 && (
-        <div className="bg-[#161616] border border-[#1f1f1f] rounded-xl p-6 space-y-4">
-          <h2 className="font-mono font-bold text-xs text-[#666] uppercase tracking-wider">Ticket Inventory</h2>
+        <div className="bg-[#131C30] border border-[#1F2A44] rounded-xl p-6 space-y-4">
+          <h2 className="font-mono font-bold text-xs text-[#8B95AB] uppercase tracking-wider">Ticket Inventory</h2>
           <InventoryTable tickets={inventory.tickets} />
         </div>
       )}
@@ -416,7 +416,7 @@ function MyEvents({ apiKey }: { apiKey: string }) {
       .catch((e) => { setError(e.message); setLoading(false) })
   }, [apiKey])
 
-  if (loading) return <div className="text-center py-20 text-[#666] font-mono animate-pulse">Loading your events…</div>
+  if (loading) return <div className="text-center py-20 text-[#8B95AB] font-mono animate-pulse">Loading your events…</div>
   if (error || data?.error) return (
     <div className="text-center py-20 text-red-400 font-mono">{error || data?.message}</div>
   )
@@ -427,7 +427,7 @@ function MyEvents({ apiKey }: { apiKey: string }) {
     <div className="space-y-6">
       {/* Promoter banner */}
       {bannerUri && (
-        <div className="rounded-xl overflow-hidden border border-[#1f1f1f] h-32">
+        <div className="rounded-xl overflow-hidden border border-[#1F2A44] h-32">
           <img src={bannerUri.startsWith('ipfs://') ? bannerUri.replace('ipfs://', 'https://ipfs.io/ipfs/') : bannerUri}
             alt="Banner" className="w-full h-full object-cover" />
         </div>
@@ -435,38 +435,38 @@ function MyEvents({ apiKey }: { apiKey: string }) {
 
       <div className="flex items-center justify-between">
         <div>
-          {promoterName && <p className="text-xs text-[#f97316] font-mono">{promoterName}</p>}
+          {promoterName && <p className="text-xs text-[#E25822] font-mono">{promoterName}</p>}
           <h1 className="font-mono text-2xl font-bold">My Events</h1>
         </div>
         <Link href="/create-event"
-          className="px-4 py-2 bg-[#f97316] text-white rounded-lg text-sm font-mono font-bold hover:bg-[#ea6c0a] transition-colors">
+          className="px-4 py-2 bg-[#E25822] text-white rounded-lg text-sm font-mono font-bold hover:bg-[#C24A1E] transition-colors">
           + New Event
         </Link>
       </div>
 
       {events.length === 0 ? (
-        <div className="text-center py-20 text-[#666] font-mono">
-          No events yet. <Link href="/create-event" className="text-[#f97316] hover:underline">Create your first event →</Link>
+        <div className="text-center py-20 text-[#8B95AB] font-mono">
+          No events yet. <Link href="/create-event" className="text-[#E25822] hover:underline">Create your first event →</Link>
         </div>
       ) : (
         <div className="space-y-3">
           {events.map((e: any) => (
             <Link key={e.id} href={`/events?id=${e.id}&key=${apiKey}`}
-              className={`block bg-[#161616] border rounded-xl p-5 hover:border-[#f97316]/40 transition-colors group ${
-                e.status === 'pending_payment' ? 'border-[#f97316]/30' : 'border-[#1f1f1f]'
+              className={`block bg-[#131C30] border rounded-xl p-5 hover:border-[#E25822]/40 transition-colors group ${
+                e.status === 'pending_payment' ? 'border-[#E25822]/30' : 'border-[#1F2A44]'
               }`}>
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
-                  <p className="font-mono font-bold text-[#f0f0f0] group-hover:text-[#f97316] transition-colors truncate">{e.eventName}</p>
-                  <p className="text-xs text-[#f97316] font-mono mt-0.5">{e.ensName}</p>
-                  <p className="text-xs text-[#555] mt-1">{e.totalTickets?.toLocaleString()} tickets{e.eventDate ? ` · ${new Date(e.eventDate).toLocaleDateString()}` : ''}</p>
+                  <p className="font-mono font-bold text-[#E8ECF3] group-hover:text-[#E25822] transition-colors truncate">{e.eventName}</p>
+                  <p className="text-xs text-[#E25822] font-mono mt-0.5">{e.ensName}</p>
+                  <p className="text-xs text-[#5E6A85] mt-1">{e.totalTickets?.toLocaleString()} tickets{e.eventDate ? ` · ${new Date(e.eventDate).toLocaleDateString()}` : ''}</p>
                 </div>
                 <div className="flex flex-col items-end gap-1 flex-shrink-0">
                   <span className={`px-2 py-0.5 rounded-full text-xs font-mono font-bold ${
-                    e.status === 'active' ? 'bg-[#22c55e]/20 text-[#22c55e]' : 'bg-[#f97316]/10 text-[#f97316]'
+                    e.status === 'active' ? 'bg-[#22c55e]/20 text-[#22c55e]' : 'bg-[#E25822]/10 text-[#E25822]'
                   }`}>{e.status}</span>
                   {e.status === 'pending_payment' && (
-                    <span className="text-xs text-[#f97316] font-mono">Complete payment →</span>
+                    <span className="text-xs text-[#E25822] font-mono">Complete payment →</span>
                   )}
                 </div>
               </div>
@@ -486,7 +486,7 @@ function MyEvents({ apiKey }: { apiKey: string }) {
 function ConnectPrompt() {
   return (
     <div className="text-center py-20 space-y-4">
-      <p className="text-[#666] font-mono">Connect your wallet to view your events</p>
+      <p className="text-[#8B95AB] font-mono">Connect your wallet to view your events</p>
       <ConnectButton />
     </div>
   )
@@ -498,14 +498,14 @@ function ApiKeyGate({ onKey }: { onKey: (k: string) => void }) {
   const [key, setKey] = useState('')
   return (
     <div className="text-center py-20 space-y-4 max-w-md mx-auto">
-      <p className="text-[#666] font-mono text-sm">Enter your API key to view your events</p>
+      <p className="text-[#8B95AB] font-mono text-sm">Enter your API key to view your events</p>
       <div className="flex gap-2">
         <input value={key} onChange={(e) => setKey(e.target.value)}
           placeholder="blt_..."
-          className="flex-1 bg-[#161616] border border-[#2a2a2a] rounded-lg px-3 py-2 text-sm text-[#f0f0f0] placeholder-[#444] focus:outline-none focus:border-[#f97316] font-mono"
+          className="flex-1 bg-[#131C30] border border-[#1F2A44] rounded-lg px-3 py-2 text-sm text-[#E8ECF3] placeholder-[#5E6A85] focus:outline-none focus:border-[#E25822] font-mono"
         />
         <button onClick={() => key && onKey(key)}
-          className="px-4 py-2 bg-[#f97316] text-white rounded-lg text-sm font-mono font-bold hover:bg-[#ea6c0a] transition-colors">
+          className="px-4 py-2 bg-[#E25822] text-white rounded-lg text-sm font-mono font-bold hover:bg-[#C24A1E] transition-colors">
           Go
         </button>
       </div>
@@ -550,17 +550,17 @@ function EventsRoot() {
 
 export default function EventPage() {
   return (
-    <main className="min-h-screen bg-[#0a0a0a] text-[#f0f0f0]">
-      <nav className="border-b border-[#1f1f1f] px-6 py-4 flex items-center justify-between">
+    <main className="min-h-screen bg-[#0A0F1A] text-[#E8ECF3]">
+      <nav className="border-b border-[#1F2A44] px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link href="/" className="font-mono text-[#f97316] font-bold">boleto.eth</Link>
-          <span className="text-[#666]">/</span>
-          <span className="text-[#f0f0f0]">Events</span>
+          <Link href="/" className="font-mono text-[#E25822] font-bold">boleto.eth</Link>
+          <span className="text-[#8B95AB]">/</span>
+          <span className="text-[#E8ECF3]">Events</span>
         </div>
         <ConnectButton />
       </nav>
       <div className="max-w-4xl mx-auto px-6 py-12">
-        <Suspense fallback={<div className="text-center py-20 text-[#666] font-mono animate-pulse">Loading…</div>}>
+        <Suspense fallback={<div className="text-center py-20 text-[#8B95AB] font-mono animate-pulse">Loading…</div>}>
           <EventsRoot />
         </Suspense>
       </div>

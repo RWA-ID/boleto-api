@@ -234,7 +234,7 @@ const SECTIONS = [
 
 const METHOD_COLORS: Record<Method, string> = {
   GET:   'bg-[#22c55e]/10 text-[#22c55e] border border-[#22c55e]/20',
-  POST:  'bg-[#f97316]/10 text-[#f97316] border border-[#f97316]/20',
+  POST:  'bg-[#E25822]/10 text-[#E25822] border border-[#E25822]/20',
   PATCH: 'bg-[#a78bfa]/10 text-[#a78bfa] border border-[#a78bfa]/20',
 }
 
@@ -255,11 +255,11 @@ function CodeBlock({ code, lang = 'json' }: { code: string; lang?: string }) {
   }
   return (
     <div className="relative group">
-      <pre className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-lg p-4 text-xs font-mono text-[#f0f0f0] overflow-x-auto whitespace-pre">
+      <pre className="bg-[#0A0F1A] border border-[#131C30] rounded-lg p-4 text-xs font-mono text-[#E8ECF3] overflow-x-auto whitespace-pre">
         {code}
       </pre>
       <button onClick={copy}
-        className="absolute top-2 right-2 px-2 py-1 bg-[#1f1f1f] text-[#666] text-xs font-mono rounded opacity-0 group-hover:opacity-100 hover:text-[#f0f0f0] transition-all">
+        className="absolute top-2 right-2 px-2 py-1 bg-[#1F2A44] text-[#8B95AB] text-xs font-mono rounded opacity-0 group-hover:opacity-100 hover:text-[#E8ECF3] transition-all">
         {copied ? 'Copied!' : 'Copy'}
       </button>
     </div>
@@ -269,32 +269,32 @@ function CodeBlock({ code, lang = 'json' }: { code: string; lang?: string }) {
 function EndpointCard({ ep }: { ep: Endpoint }) {
   const [open, setOpen] = useState(false)
   return (
-    <div id={ep.id} className="bg-[#161616] border border-[#1f1f1f] rounded-xl overflow-hidden">
+    <div id={ep.id} className="bg-[#131C30] border border-[#1F2A44] rounded-xl overflow-hidden">
       <button onClick={() => setOpen(!open)}
-        className="w-full flex items-center gap-3 p-5 text-left hover:bg-[#1a1a1a] transition-colors">
+        className="w-full flex items-center gap-3 p-5 text-left hover:bg-[#131C30] transition-colors">
         <Badge method={ep.method} />
-        <code className="text-sm font-mono text-[#f0f0f0] flex-1">{ep.path}</code>
+        <code className="text-sm font-mono text-[#E8ECF3] flex-1">{ep.path}</code>
         {ep.auth && (
-          <span className="text-xs text-[#666] font-mono border border-[#2a2a2a] px-2 py-0.5 rounded">
+          <span className="text-xs text-[#8B95AB] font-mono border border-[#1F2A44] px-2 py-0.5 rounded">
             🔑 Auth
           </span>
         )}
-        <span className="text-[#f97316] font-bold text-lg leading-none">{open ? '−' : '+'}</span>
+        <span className="text-[#E25822] font-bold text-lg leading-none">{open ? '−' : '+'}</span>
       </button>
 
       {open && (
-        <div className="border-t border-[#1f1f1f] p-5 space-y-4">
-          <p className="text-sm text-[#999]">{ep.desc}</p>
+        <div className="border-t border-[#1F2A44] p-5 space-y-4">
+          <p className="text-sm text-[#9CA3AF]">{ep.desc}</p>
 
           {ep.body && (
             <div className="space-y-1">
-              <p className="text-xs text-[#555] font-mono uppercase tracking-wider">Request Body</p>
+              <p className="text-xs text-[#5E6A85] font-mono uppercase tracking-wider">Request Body</p>
               <CodeBlock code={ep.body} />
             </div>
           )}
 
           <div className="space-y-1">
-            <p className="text-xs text-[#555] font-mono uppercase tracking-wider">Response</p>
+            <p className="text-xs text-[#5E6A85] font-mono uppercase tracking-wider">Response</p>
             <CodeBlock code={ep.response} />
           </div>
         </div>
@@ -314,21 +314,21 @@ export default function DocsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#0a0a0a] text-[#f0f0f0]">
+    <main className="min-h-screen bg-[#0A0F1A] text-[#E8ECF3]">
       {/* Nav */}
-      <nav className="border-b border-[#1f1f1f] px-6 py-4 flex items-center justify-between sticky top-0 bg-[#0a0a0a] z-10">
+      <nav className="border-b border-[#1F2A44] px-6 py-4 flex items-center justify-between sticky top-0 bg-[#0A0F1A] z-10">
         <div className="flex items-center gap-4">
-          <Link href="/" className="font-mono text-[#f97316] font-bold">boleto.eth</Link>
-          <span className="text-[#333]">/</span>
-          <span className="text-[#f0f0f0]">API Docs</span>
+          <Link href="/" className="font-mono text-[#E25822] font-bold">boleto.eth</Link>
+          <span className="text-[#2B395C]">/</span>
+          <span className="text-[#E8ECF3]">API Docs</span>
         </div>
         <div className="flex items-center gap-3">
           <a href="https://github.com/RWA-ID/boleto-api" target="_blank" rel="noopener noreferrer"
-            className="text-xs text-[#666] hover:text-[#f0f0f0] font-mono transition-colors">
+            className="text-xs text-[#8B95AB] hover:text-[#E8ECF3] font-mono transition-colors">
             GitHub →
           </a>
           <Link href="/create-event"
-            className="px-3 py-1.5 bg-[#f97316] text-white rounded-lg text-xs font-mono font-bold hover:bg-[#ea6c0a] transition-colors">
+            className="px-3 py-1.5 bg-[#E25822] text-white rounded-lg text-xs font-mono font-bold hover:bg-[#C24A1E] transition-colors">
             Get API Key
           </Link>
         </div>
@@ -342,18 +342,18 @@ export default function DocsPage() {
               <button key={s.id} onClick={() => scrollTo(s.id)}
                 className={`w-full text-left px-3 py-2 rounded-lg text-sm font-mono transition-colors ${
                   activeSection === s.id
-                    ? 'bg-[#f97316]/10 text-[#f97316]'
-                    : 'text-[#666] hover:text-[#f0f0f0]'
+                    ? 'bg-[#E25822]/10 text-[#E25822]'
+                    : 'text-[#8B95AB] hover:text-[#E8ECF3]'
                 }`}>
                 {s.label}
               </button>
             ))}
-            <div className="pt-4 border-t border-[#1f1f1f] space-y-1">
-              <p className="text-xs text-[#444] font-mono px-3 pb-1">Endpoints</p>
+            <div className="pt-4 border-t border-[#1F2A44] space-y-1">
+              <p className="text-xs text-[#5E6A85] font-mono px-3 pb-1">Endpoints</p>
               {ENDPOINTS.map((ep) => (
                 <button key={ep.id} onClick={() => { setActiveSection('endpoints'); document.getElementById(ep.id)?.scrollIntoView({ behavior: 'smooth' }) }}
-                  className="w-full text-left px-3 py-1.5 rounded text-xs font-mono text-[#555] hover:text-[#f0f0f0] transition-colors flex items-center gap-2">
-                  <span className={`text-[10px] font-bold ${ep.method === 'GET' ? 'text-[#22c55e]' : ep.method === 'POST' ? 'text-[#f97316]' : 'text-[#a78bfa]'}`}>
+                  className="w-full text-left px-3 py-1.5 rounded text-xs font-mono text-[#5E6A85] hover:text-[#E8ECF3] transition-colors flex items-center gap-2">
+                  <span className={`text-[10px] font-bold ${ep.method === 'GET' ? 'text-[#22c55e]' : ep.method === 'POST' ? 'text-[#E25822]' : 'text-[#a78bfa]'}`}>
                     {ep.method}
                   </span>
                   {ep.title}
@@ -369,12 +369,12 @@ export default function DocsPage() {
           {/* Overview */}
           <section id="overview" className="space-y-4">
             <h1 className="font-mono text-3xl font-bold">API Reference</h1>
-            <p className="text-[#999] leading-relaxed">
+            <p className="text-[#9CA3AF] leading-relaxed">
               boleto.eth is a Web3 ticketing protocol that issues permanent ENS subdomain identities and ERC-721 NFT tickets for events.
               Platforms integrate via REST API — no smart contract knowledge required.
             </p>
-            <div className="bg-[#161616] border border-[#1f1f1f] rounded-xl p-5 space-y-2">
-              <p className="text-xs text-[#555] font-mono uppercase tracking-wider">Base URL</p>
+            <div className="bg-[#131C30] border border-[#1F2A44] rounded-xl p-5 space-y-2">
+              <p className="text-xs text-[#5E6A85] font-mono uppercase tracking-wider">Base URL</p>
               <CodeBlock code={API_BASE} lang="text" />
             </div>
           </section>
@@ -382,14 +382,14 @@ export default function DocsPage() {
           {/* Auth */}
           <section id="auth" className="space-y-4">
             <h2 className="font-mono text-xl font-bold">Authentication</h2>
-            <p className="text-[#999] text-sm leading-relaxed">
+            <p className="text-[#9CA3AF] text-sm leading-relaxed">
               Protected endpoints require an API key in the Authorization header.
               API keys are issued automatically when you activate your first event — one key per promoter wallet.
             </p>
             <CodeBlock code={`Authorization: Bearer blt_your_api_key_here`} lang="http" />
-            <div className="bg-[#f97316]/5 border border-[#f97316]/20 rounded-xl p-4">
-              <p className="text-sm text-[#f97316] font-mono font-bold mb-1">Save your API key</p>
-              <p className="text-xs text-[#999]">
+            <div className="bg-[#E25822]/5 border border-[#E25822]/20 rounded-xl p-4">
+              <p className="text-sm text-[#E25822] font-mono font-bold mb-1">Save your API key</p>
+              <p className="text-xs text-[#9CA3AF]">
                 Your API key is only shown once when you activate your first event. Store it securely.
                 If lost, contact support with your promoter wallet address.
               </p>
@@ -404,14 +404,14 @@ export default function DocsPage() {
                 { label: 'BoletoTickets (Ethereum Mainnet)', value: CONTRACT, link: `https://etherscan.io/address/${CONTRACT}` },
                 { label: 'Platform Treasury', value: '0x0104c88ea4f55c26df89f5cd3ec62f3c8288d69b', link: null },
               ].map(({ label, value, link }) => (
-                <div key={label} className="bg-[#161616] border border-[#1f1f1f] rounded-xl p-4 flex items-start justify-between gap-4">
+                <div key={label} className="bg-[#131C30] border border-[#1F2A44] rounded-xl p-4 flex items-start justify-between gap-4">
                   <div className="min-w-0">
-                    <p className="text-xs text-[#666] mb-1">{label}</p>
-                    <p className="font-mono text-sm text-[#f0f0f0] break-all">{value}</p>
+                    <p className="text-xs text-[#8B95AB] mb-1">{label}</p>
+                    <p className="font-mono text-sm text-[#E8ECF3] break-all">{value}</p>
                   </div>
                   {link && (
                     <a href={link} target="_blank" rel="noopener noreferrer"
-                      className="text-xs text-[#f97316] font-mono flex-shrink-0 hover:underline">
+                      className="text-xs text-[#E25822] font-mono flex-shrink-0 hover:underline">
                       Etherscan →
                     </a>
                   )}
@@ -419,7 +419,7 @@ export default function DocsPage() {
               ))}
             </div>
             <div className="space-y-2">
-              <p className="text-xs text-[#555] font-mono uppercase tracking-wider">mintWithVoucher() — buyer self-mint</p>
+              <p className="text-xs text-[#5E6A85] font-mono uppercase tracking-wider">mintWithVoucher() — buyer self-mint</p>
               <CodeBlock code={`// Solidity interface
 function mintWithVoucher(
   bytes32 eventId,    // from /voucher response
@@ -442,7 +442,7 @@ function mintWithVoucher(
           {/* NFT Metadata */}
           <section id="metadata" className="space-y-4">
             <h2 className="font-mono text-xl font-bold">NFT Metadata</h2>
-            <p className="text-[#999] text-sm">
+            <p className="text-[#9CA3AF] text-sm">
               Each ticket NFT follows the OpenSea metadata standard. Metadata is generated and pinned to IPFS
               automatically when the first voucher or mint is requested for a seat.
               All CSV columns you provide at event creation are included as NFT traits.
@@ -461,8 +461,8 @@ function mintWithVoucher(
     { "trait_type": "Gate",       "value": "1" }
   ]
 }`} />
-            <p className="text-xs text-[#555]">
-              The <code className="text-[#f0f0f0]">animation_url</code> is a scannable QR code PNG that links to the boleto.eth verification page.
+            <p className="text-xs text-[#5E6A85]">
+              The <code className="text-[#E8ECF3]">animation_url</code> is a scannable QR code PNG that links to the boleto.eth verification page.
               On OpenSea, this displays when a buyer interacts with their ticket.
             </p>
           </section>
@@ -470,7 +470,7 @@ function mintWithVoucher(
           {/* Integration */}
           <section id="integration" className="space-y-6">
             <h2 className="font-mono text-xl font-bold">Platform Integration</h2>
-            <p className="text-[#999] text-sm">
+            <p className="text-[#9CA3AF] text-sm">
               boleto.eth is designed as a backend rail. Platforms keep their own UX — buyers never leave your app.
             </p>
 
@@ -543,9 +543,9 @@ const ticket = inv.tickets.find(t => t.seatNumber === scannedSeat)
 const isValid = ticket?.minted && ticket?.ownerWallet === expectedWallet`,
                 },
               ].map(({ step, title, code }) => (
-                <div key={step} className="bg-[#161616] border border-[#1f1f1f] rounded-xl p-5 space-y-3">
+                <div key={step} className="bg-[#131C30] border border-[#1F2A44] rounded-xl p-5 space-y-3">
                   <div className="flex items-center gap-3">
-                    <span className="w-6 h-6 rounded-full bg-[#f97316] text-white text-xs font-mono font-bold flex items-center justify-center flex-shrink-0">
+                    <span className="w-6 h-6 rounded-full bg-[#E25822] text-white text-xs font-mono font-bold flex items-center justify-center flex-shrink-0">
                       {step}
                     </span>
                     <h3 className="font-mono font-bold text-sm">{title}</h3>

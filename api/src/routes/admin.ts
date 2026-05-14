@@ -116,4 +116,5 @@ router.get('/events', requireAdminSecret, async (_req: Request, res: Response, n
   }
 })
 
+
 export default router
